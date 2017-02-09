@@ -69,7 +69,7 @@ public class DBTester {
 				System.out.println(userDTO);
 			}
 
-		} catch (DALException e) {
+		} catch (DALException|NullPointerException e) {
 			e.printStackTrace();
 		}
 	}
