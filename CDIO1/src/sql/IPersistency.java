@@ -8,7 +8,7 @@ public interface IPersistency {
 
 	boolean save(ArrayList<UserDTO> list);
 	ArrayList<UserDTO> load();
-	void opdateUser(UserDTO user);
+	void opdateUser(UserDTO user, );
 	
 	
 }
