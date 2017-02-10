@@ -2,22 +2,23 @@ package view;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 import dal.IUserDAO;
 import dal.IUserDAO.DALException;
 import dto.UserDTO;
+import inputDevices.Keyboard;
 
 public class TUIBasic implements IUserInterface {
 
 	private IUserDAO userController;
-	Scanner keyb;
+	Keyboard keyb;
 	private boolean running;
 
 	public TUIBasic(IUserDAO uCtrl) {
 		this.userController = uCtrl;
-		keyb = new Scanner(System.in);
+		keyb = new Keyboard();
 		running = true;
+		
 	}
 
 	public void menu()
@@ -34,7 +35,7 @@ public class TUIBasic implements IUserInterface {
 		while(running)
 		{
 			System.out.println(commands);
-			String input = keyb.nextLine();
+			String input = keyb.nextString();
 			switch(input)
 			{
 			case "1": createUser();
@@ -82,6 +83,7 @@ public class TUIBasic implements IUserInterface {
 		cpr = chooseCPR();
 		//String password = userController.generatePassword();
 		//userController.createUser(Insert stuff here);
+		System.out.println("User has been created");
 	}
 
 	public void updateUser()
@@ -92,7 +94,7 @@ public class TUIBasic implements IUserInterface {
 		boolean changing = true;
 		while(changing)
 		{
-			String input = keyb.nextLine();
+			String input = keyb.nextString();
 			int userID;
 			if(input.equals("help"))
 				listUsers();
@@ -113,7 +115,7 @@ public class TUIBasic implements IUserInterface {
 						while(changing)
 						{
 							System.out.println(commands);
-							input = keyb.nextLine();
+							input = keyb.nextString();
 							switch(input)
 							{
 							case "1" : user.setUserName(chooseName());
@@ -151,7 +153,36 @@ public class TUIBasic implements IUserInterface {
 
 	public void deleteUser()
 	{
-		
+		System.out.println("Enter the ID of the person you want to delete \n"
+						 + " or type \"help\" to see a list of all users");
+		boolean deleting = true;
+		while(deleting)
+		{
+			String input = keyb.nextString();
+			if(input.equals("help"))
+			{
+				listUsers();
+			}
+			else
+			{
+				int userID = keyb.nextInt();
+				if(userID!=-1)
+				{
+					try {
+						System.out.println("Deleting..."+userController.getUser(userID));
+						userController.deleteUser(userID);
+						deleting = false;
+					} catch (DALException e) {
+						System.out.println(e.getMessage());
+					}
+				}
+				else
+					System.out.println("ERROR: Unknown command");
+				
+				
+			}
+			
+		}
 	}
 
 	public void quit()
@@ -163,19 +194,19 @@ public class TUIBasic implements IUserInterface {
 	private String chooseName()
 	{
 		System.out.println("Enter the name of the user: ");
-		return keyb.nextLine();
+		return keyb.nextString();
 	}
 	
 	private String chooseInitials()
 	{
 		System.out.println("Enter their initials: ");
-		return keyb.nextLine();
+		return keyb.nextString();
 	}
 	
 	private String chooseCPR()
 	{
 		System.out.println("Please enter the users CPR-number");
-		return keyb.nextLine();
+		return keyb.nextString();
 	}
 	
 	private List<String> chooseRoles()
@@ -189,13 +220,6 @@ public class TUIBasic implements IUserInterface {
 		System.out.println("Choose the user's roles");
 		while(roles.size()>0)
 		{
-			System.out.print("Current chosen roles: ");
-			for(int i = 0; i<chosenRoles.size();i++)
-			{
-				
-			}
-			System.out.println();
-			
 			//Prints a list of all the available roles
 			System.out.println("Available roles: ");
 			for(int i = 0; i<roles.size();i++)
@@ -205,7 +229,7 @@ public class TUIBasic implements IUserInterface {
 			System.out.println(" --["+(roles.size()+1)+"] - Done choosing");
 
 
-			String input = keyb.nextLine();
+			String input = keyb.nextString();
 			if(input.equals(""+(roles.size()+1)))
 			{
 				roles.clear();
@@ -226,6 +250,13 @@ public class TUIBasic implements IUserInterface {
 			}
 			else
 				System.out.println("ERROR: Unknown command");
+			
+			System.out.print("Current chosen roles: ");
+			for(int i = 0; i<chosenRoles.size();i++)
+			{
+				System.out.print(chosenRoles.get(i)+"..");
+			}
+			System.out.println();
 		}
 		return chosenRoles;
 	}

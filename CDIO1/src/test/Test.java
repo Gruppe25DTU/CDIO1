@@ -4,18 +4,17 @@ import sql.DatabaseSaver;
 
 public class Test {
 	public static void main(String[] args) {
-		
-		boolean igang
-		
+
+		boolean igang;
+
 		while(!igang) {
-			
+
 			igang = false;
 		}
 		while(!exit) 
-		
-		if(n == 'n') 
-			exit = false;
-		
+			if(n == 'n') 
+				exit = false;
+
 		/*
 		 * @param userID
 		 * @param userName
