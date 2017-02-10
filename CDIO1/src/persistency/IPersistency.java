@@ -8,5 +8,7 @@ public interface IPersistency {
   
   ArrayList<UserDTO> load();
   boolean save(ArrayList<UserDTO> users);
+  void opdateUser(UserDTO user, String userID);
+
 
 }
