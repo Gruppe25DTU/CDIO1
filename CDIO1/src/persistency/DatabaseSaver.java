@@ -1,11 +1,18 @@
 package persistency;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.xml.bind.DatatypeConverter;
 
 import dto.UserDTO;
 
@@ -35,9 +42,16 @@ public class DatabaseSaver implements IPersistency{
 		String cpr = user.getCpr();
 		String password = user.getPassword();
 		List<String> role = user.getRoles();
-
-		String  consistantStatement = "INSERsT INTO users VALUES('%d','%s','%s','%s','%s','%s');";
-		String statement = String.format(consistantStatement, userID,userName,ini,cpr,password,role);
+		String roles = "";
+		try {
+			roles = anySerialize(role);
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		String  consistantStatement = "INSERT INTO users VALUES('%d','%s','%s','%s','%s','%s');";
+		String statement = String.format(consistantStatement, userID,userName,ini,cpr,password,roles);
 
 		PreparedStatement addToTable;
 		try {
@@ -116,13 +130,13 @@ public class DatabaseSaver implements IPersistency{
 		String statement = "Select ";
 		for(int i = 0;i<list.size();i++) {
 			UserDTO user = list.get(i);
-			
+
 			addToTable(user);
-			
+
 		}
 		return true;
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	/**
@@ -137,8 +151,8 @@ public class DatabaseSaver implements IPersistency{
 		String cpr = user.getCpr();
 		String password = user.getPassword();
 		List<String> role = user.getRoles();
-		
-		
+
+
 		String statement = String.format(consistantStatement,userName,ini,cpr,password,role,userID);
 
 		try {
@@ -148,10 +162,10 @@ public class DatabaseSaver implements IPersistency{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 	}
-	
-	
+
+
 
 	@Override
 	public ArrayList<UserDTO> load() {
@@ -162,8 +176,27 @@ public class DatabaseSaver implements IPersistency{
 	@Override
 	public void opdateUser(UserDTO user, String userID) {
 		// TODO Auto-generated method stub
-		
+
 	}
+
+
+
+	public static String anySerialize(Object o) throws IOException { 
+		ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
+		ObjectOutputStream oos = new ObjectOutputStream(baos); 
+		oos.writeObject(o); 
+		oos.close(); 
+		return DatatypeConverter.printBase64Binary(baos.toByteArray()); 
+	} 
+	public static Object anyDeserialize(String s) throws IOException, 
+	ClassNotFoundException { 
+		ByteArrayInputStream bais = new 
+				ByteArrayInputStream(DatatypeConverter.parseBase64Binary(s)); 
+		ObjectInputStream ois = new ObjectInputStream(bais); 
+		Object o = ois.readObject(); 
+		ois.close(); 
+		return o; 
+	} 
 
 }
 
