@@ -2,6 +2,7 @@ package view;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import Stringbank.TUIBasic_Strings;
 import dal.IUserDAO;
@@ -13,11 +14,13 @@ public class TUIController {
 	private IUserInterface ui;
 	private IUserDAO f;
 	private TUIBasic_Strings s;
-	public TUIController(IUserInterface ui, IUserDAO f) {
+	public TUIController(IUserInterface ui, IUserDAO f) 
+	{
 		this.f = f;
 		this.ui = ui;
+		s = new TUIBasic_Strings();
 	}
-	
+
 	public void menu()
 	{
 		ui.displayMessage(s.getText(1));
@@ -41,7 +44,7 @@ public class TUIController {
 			}
 		}
 	}
-	
+
 	public void createUser()
 	{
 		String name = chooseName();
@@ -57,6 +60,7 @@ public class TUIController {
 		newUser.setRoles(roles);
 		newUser.setUserID(userId);
 		newUser.setUserName(name);
+		System.out.println(psswrd);
 		try 
 		{
 			f.createUser(newUser);
@@ -64,9 +68,9 @@ public class TUIController {
 		catch (DALException e) {
 			System.out.println(e.getMessage());
 		}
-		
+
 	}
-	
+
 	public void listUsers()
 	{
 		try 
@@ -82,22 +86,115 @@ public class TUIController {
 			System.out.println(e.getMessage());
 		}
 	}
-	
+
 	public void updateUser()
 	{
-		
+		ui.displayMessage(s.getText(4));
+		UserDTO user;
+		while(true)
+		{
+
+			int userId = ui.getInt("");
+			String input = ui.getLastInput();
+			if(input.equals("help"))
+				listUsers();
+			else if(userId == -1)
+			{
+
+			}
+			else
+			{
+				try
+				{
+					user = f.getUser(userId);
+					if(user != null)
+					{
+						chooseWhatToUpdate(user);
+						f.updateUser(user);
+						break;
+
+					}
+					else
+						ui.displayMessage(s.getText(21));
+				}
+				catch(DALException e)
+				{
+					ui.displayMessage(e.getMessage());
+				}
+			}
+
+
+		}
 	}
-	
+
+	private void chooseWhatToUpdate(UserDTO user)
+	{
+		boolean changing = true;
+		while(changing)
+		{
+			ui.displayMessage(s.getText(5), user.getUserName());
+			String input = ui.getResponse(s.getText(6));
+
+			switch(input)
+			{
+			case "1": user.setUserName(chooseName());
+			break;
+			case "2": user.setIni(chooseInitials());
+			break;
+			case "3": user.setRoles(chooseRoles());
+			break;
+			case "4": changing = false;
+			break;
+			default : ui.displayMessage(s.getText(20));
+			break;
+			}
+
+		}
+	}
+
 	public void deleteUser()
 	{
-		
+		ui.displayMessage(s.getText(7));
+		while(true)
+		{
+			int userId = ui.getInt("");
+			String input = ui.getLastInput();
+			if(input.equals("help"))
+			{
+				listUsers();
+			}
+			else
+			{
+				if(userId!=-1)
+				{
+					try {
+						if(ui.confirmInput())
+						{
+							ui.displayMessage(s.getText(8), userId);
+							f.deleteUser(userId);
+							break;
+						}
+						else
+							break;
+
+					} catch (DALException e) {
+						System.out.println(e.getMessage());
+					}
+				}
+				else
+					ui.displayMessage(s.getText(20));
+
+
+			}
+
+		}
 	}
-	
-	public void quit()
+
+	private void quit()
 	{
 		ui.quit();
 	}
-	
+
 	private String chooseName()
 	{
 		while(true)
@@ -110,15 +207,15 @@ public class TUIController {
 			else
 				return input;
 		}
-		
+
 	}
-	
+
 	private String chooseInitials()
 	{
 		while(true)
 		{
 			String input = ui.getResponse(s.getText(10));
-			
+
 			if(containsNumbers(input))
 				ui.displayMessage("initials can't contain numbers");
 			else if(input.length()<2)
@@ -129,7 +226,7 @@ public class TUIController {
 				return input;
 		}
 	}
-	
+
 	private boolean containsNumbers(String str)
 	{
 		for(char c : str.toCharArray())
@@ -139,12 +236,41 @@ public class TUIController {
 		}
 		return false;
 	}
-	
+
 	private String chooseCPR()
 	{
-		return "";
+		while(true)
+		{
+			String input = ui.getResponse(s.getText(11));
+			if(correctCPRFormat(input))
+				return input;
+			else
+				ui.displayMessage("Incorrect CPR format");
+		}
 	}
-	
+
+	private boolean correctCPRFormat(String cpr)
+	{
+		//CPR number has to be symbols long
+		if(cpr.length()!=11)
+			return false;
+		//checking if the cprNumber has the hyphen and that each side of hyphen is as long as it should be
+		String[] cprParts = cpr.split("-");
+		if(cprParts.length!=2 || cprParts[0].length()!=6 || cprParts[1].length()!=4)
+			return false;
+		
+		//Checking if the cpr contains anything other than numbers
+		for(char c : cprParts[0].toCharArray())
+			if(!(c>='0' && c<='9'))
+				return false;
+		
+		for(char c : cprParts[1].toCharArray())
+			if(!(c>='0' && c<='9'))
+				return false;
+		
+		return true;
+	}
+
 	private List<String> chooseRoles()
 	{
 		List<String> roles = new ArrayList<String>();
@@ -158,12 +284,11 @@ public class TUIController {
 		{
 			//Prints a list of all the available roles
 			String msg = s.getText(17);
-			ui.displayMessage(s.getText(17));
 			for(int i = 0; i<roles.size();i++)
 			{
-				msg += String.format(s.getText(18), i+1, roles.get(i));
+				msg += "\n"+String.format(s.getText(18), i+1, roles.get(i));
 			}
-			msg += String.format(s.getText(18), roles.size()+1, "Done choosing");
+			msg += "\n"+String.format(s.getText(18), roles.size()+1, "Done choosing");
 			String input = ui.getResponse(msg);
 			if(input.equals(""+(roles.size()+1)))
 			{
@@ -185,7 +310,7 @@ public class TUIController {
 			}
 			else
 				System.out.println(s.getText(20));
-			
+
 			String chosenRolesMsg = s.getText(19);
 			for(int i = 0; i<chosenRoles.size();i++)
 			{
@@ -196,15 +321,56 @@ public class TUIController {
 		}
 		return chosenRoles;
 	}
-	
+
 	private String generatePassword()
 	{
-		return "";
+		Random gen = new Random();
+		String password = "";
+		//Randomly decides whether the password should have 3-5 Capital letters, 3-5 small letters, and 3-5 numbers
+		int cpLet = gen.nextInt(3)+3;
+		int smlLet = gen.nextInt(3)+3;
+		int nmbs = gen.nextInt(3)+3;
+		int[] all = {cpLet,smlLet,nmbs};
+		for(int i = 0; i<cpLet+smlLet+nmbs;i++)
+		{
+			int index = gen.nextInt(3);
+			if(all[index]>0)
+			{
+				char c = 0;
+				all[index]--;
+				if(index == 0)
+					c += gen.nextInt(26)+'A';
+				else if(index == 1)
+					c += gen.nextInt(26)+'a';
+				else
+					c += gen.nextInt(10)+'0';
+				password += c;
+			}
+			else
+				i--;
+		}
+		return password;
 	}
-	
+
 	private int generateUserId()
 	{
-		return 0;
+		try {
+			List<UserDTO> users = f.getUserList();
+			for(int i = 11; i<100; i++)
+			{
+				boolean idInUse = false;
+				for(int k = 0 ; k<users.size();k++)
+				{
+					if(i == users.get(i).getUserID())
+						idInUse = true;
+				}
+				if(!idInUse)
+					return i;
+			}
+		} catch (DALException e) {
+			System.out.println(e.getMessage());
+		}
+		return -1;
 	}
 	public void run()
 	{

@@ -5,15 +5,18 @@ import java.util.Scanner;
 public class Keyboard {
 
 	private Scanner keyb;
+	private String lastInput; //Saves the last input
 	
 	public Keyboard()
 	{
 		keyb = new Scanner(System.in);
+		lastInput = null;
 	}
 	
 	public int nextInt()
 	{
 		String input  = keyb.nextLine();
+		lastInput = input;
 		int result = -1;
 		
 			try
@@ -23,19 +26,25 @@ public class Keyboard {
 			}
 			catch(NumberFormatException e)
 			{
-				System.out.println("Not a number");
+
 			}
 		return result;
 	}
 	
 	public String nextString()
 	{
-		return keyb.nextLine();
+		lastInput = keyb.nextLine();
+		return lastInput;
 	}
 	
 	public void close()
 	{
 		keyb.close();
+	}
+	
+	public String getLastInput()
+	{
+		return lastInput;
 	}
 
 }
