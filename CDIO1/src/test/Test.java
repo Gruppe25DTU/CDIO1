@@ -8,6 +8,7 @@ import persistency.IPersistency;
 
 public class Test {
 	public static void main(String[] args) {
+
 		
 		IPersistency i = new DatabaseSaver();
 		
@@ -18,8 +19,6 @@ public class Test {
 		role.add("Pharmacist");
 		role.add("Operator");
 		UserDTO user = new UserDTO(12,"name","ini","cpr","password",role);		
-
-
 
 
 		DatabaseSaver.init();
