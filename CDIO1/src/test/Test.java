@@ -1,40 +1,41 @@
 package test;
+import java.util.ArrayList;
+
 import dto.UserDTO;
-import sql.DatabaseSaver;
+import persistency.DatabaseSaver;
+import persistency.IPersistency;
+
 
 public class Test {
 	public static void main(String[] args) {
 		
-		boolean igang
+		IPersistency i = new DatabaseSaver();
 		
-		while(!igang) {
-			
-			igang = false;
-		}
-		while(!exit) 
 		
-		if(n == 'n') 
-			exit = false;
-		
-		/*
-		 * @param userID
-		 * @param userName
-		 * @param ini
-		 * @param cpr
-		 * @param password
-		 * @param role
-		 */
-
-		UserDTO user = new UserDTO(11,"Anders And", "AA","123456-7890","asdf", "Admin");		
+		ArrayList<String> role = new ArrayList<String>();
+		role.add("foreman");
+		role.add("admin");
+		role.add("Pharmacist");
+		role.add("Operator");
+		UserDTO user = new UserDTO(12,"name","ini","cpr","password",role);		
 		DatabaseSaver.init();
+		System.out.println("init success");
 		try {
 			DatabaseSaver.createTable();
-
+			System.out.println("create table success");
 			DatabaseSaver.addToTable(user);
+			System.out.println("addToTable success");
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		UserDTO loadedUser = i.load(12);
+		System.out.println(loadedUser);
+		
+		UserDTO updateUser = new UserDTO(14,"name1","ini1","cpr1","password1",role);		
+		i.updateUser(updateUser, 12);
+		UserDTO updatedUser = i.load(14);
+		System.out.println(updatedUser);
 
 
 

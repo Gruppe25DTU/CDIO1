@@ -8,6 +8,7 @@ import java.io.ObjectOutputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +36,8 @@ public class DatabaseSaver implements IPersistency{
 	/**
 	 * Adds a user to the database:
 	 */
-	public static void addToTable(UserDTO user) {
+	public static boolean addToTable(UserDTO user) {
+		boolean returnb = false;
 		int userID = user.getUserID();
 		String userName = user.getUserName();
 		String ini = user.getIni();
@@ -46,10 +48,9 @@ public class DatabaseSaver implements IPersistency{
 		try {
 			roles = anySerialize(role);
 		} catch (IOException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		
+
 		String  consistantStatement = "INSERT INTO users VALUES('%d','%s','%s','%s','%s','%s');";
 		String statement = String.format(consistantStatement, userID,userName,ini,cpr,password,roles);
 
@@ -57,16 +58,18 @@ public class DatabaseSaver implements IPersistency{
 		try {
 			addToTable = conn.prepareStatement(statement);
 			addToTable.executeUpdate();
-
+			returnb = true;
+			
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			returnb = false;
 			e.printStackTrace();
 		}
+		return returnb;
 	}
 
 
 	/**
-	 * Creates the main table users. <br>
+	 * Creates the main table 'users'. <br>
 	 * Contains the values: <br>
 	 * userID. <br>
 	 * userName <br>
@@ -86,9 +89,9 @@ public class DatabaseSaver implements IPersistency{
 					+ "ini VARCHAR(4) NOT NULL, "
 					+ "cpr VARCHAR(11) NOT NULL, "
 					+ "password VARCHAR(30) NOT NULL,"
-					+ "role VARCHAR(20) NOT NULL, "
-					+ "PRIMARY KEY(userID),"
-					+ "PRIMARY KEY(userName));";
+					+ "role VARCHAR(256) NOT NULL, "
+					+ "PRIMARY KEY(userID));";
+
 
 			PreparedStatement create = conn.prepareStatement(statement);
 			create.executeUpdate();
@@ -125,35 +128,38 @@ public class DatabaseSaver implements IPersistency{
 		return null;
 	}
 
+	/**
+	 * Saves a non existing user. 
+	 * return true if it's able to add the user to the database,
+	 * return false if not.
+	 */
 	@Override
-	public boolean save(ArrayList<UserDTO> list) {
-		String statement = "Select ";
-		for(int i = 0;i<list.size();i++) {
-			UserDTO user = list.get(i);
-
-			addToTable(user);
-
-		}
-		return true;
-		// TODO Auto-generated method stub
-
+	public boolean save(UserDTO user) {
+		return addToTable(user);
 	}
 
 	/**
-	 * Updates the users data. Relies on dd
+	 * Updates the users data. Relies on userID.
 	 * @param user
 	 */
-	public void update(UserDTO user) {
-		String consistantStatement = "update users set userName = '%s', ini = '%s', cpr = '%s', password = '%s', role = '%s' where userID = %d;";
-		int userID = user.getUserID();
+	@Override
+	public void updateUser(UserDTO user,int userID) {
+		String consistantStatement = "update users set userID = %d, userName = '%s', ini = '%s', cpr = '%s', password = '%s', role = '%s' where userID = %d;";
+		int newUserID = user.getUserID();
 		String userName = user.getUserName();
 		String ini = user.getIni();
 		String cpr = user.getCpr();
 		String password = user.getPassword();
-		List<String> role = user.getRoles();
-
-
-		String statement = String.format(consistantStatement,userName,ini,cpr,password,role,userID);
+		String role = "";
+		try {
+			role = anySerialize(user.getRoles());
+		} catch (IOException e1) {
+			System.out.println("Unable to serialize roles at updateUser in DatabaseSaver");
+			e1.printStackTrace();
+		}
+		
+		
+		String statement = String.format(consistantStatement,newUserID,userName,ini,cpr,password,role,userID);
 
 		try {
 			PreparedStatement update = conn.prepareStatement(statement);
@@ -166,21 +172,69 @@ public class DatabaseSaver implements IPersistency{
 	}
 
 
-
+	/**
+	 * loads a user from the database.
+	 */
+	@SuppressWarnings("unchecked")
 	@Override
-	public ArrayList<UserDTO> load() {
-		// TODO Auto-generated method stub
-		return null;
+	public UserDTO load(int userID) {
+		String statement = "Select * FROM users WHERE UserID = '%d'";
+		statement = String.format(statement, userID);
+		ArrayList<String> array = new ArrayList<String>();
+		ArrayList<String> roles = new ArrayList<String>();
+		try {
+			PreparedStatement preparedStatement = conn.prepareStatement(statement);
+
+			ResultSet result = preparedStatement.executeQuery();
+
+
+			while(result.next()) {
+				array.add(result.getString("userID"));
+				array.add(result.getString("userName"));
+				array.add(result.getString("ini"));
+				array.add(result.getString("cpr"));
+				array.add(result.getString("password"));
+
+
+				roles.addAll((ArrayList<String>)anyDeserialize(result.getString("role")));
+			}
+		} catch(Exception e) {System.out.println(e);
+
+		}
+		return arrayToUserDTO(array,roles);
+
 	}
 
-	@Override
-	public void opdateUser(UserDTO user, String userID) {
-		// TODO Auto-generated method stub
+	
+	/**
+	 * Takes two arrayLists and returns a UserDTO.
+	 * @param information
+	 * @param roles
+	 * @return UserDTO
+	 */
+	public UserDTO arrayToUserDTO(ArrayList<String> information, ArrayList<String> roles) {
+		int userID = Integer.parseInt(information.get(0));
+		String userName = information.get(1);
+		String ini = information.get(2);
+		String cpr = information.get(3);
+		String password = information.get(4);
 
+
+		UserDTO user = new UserDTO(userID,userName,ini,cpr,password,roles);
+		return user;
 	}
 
 
 
+	
+
+
+	/**
+	 * Serialize an object.
+	 * @param object o.
+	 * @return serializes object in form of a string
+	 * @throws IOException
+	 */
 	public static String anySerialize(Object o) throws IOException { 
 		ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
 		ObjectOutputStream oos = new ObjectOutputStream(baos); 
@@ -188,6 +242,14 @@ public class DatabaseSaver implements IPersistency{
 		oos.close(); 
 		return DatatypeConverter.printBase64Binary(baos.toByteArray()); 
 	} 
+	
+	/**
+	 * Deserialize a string:
+	 * @param s
+	 * @return
+	 * @throws IOException
+	 * @throws ClassNotFoundException
+	 */
 	public static Object anyDeserialize(String s) throws IOException, 
 	ClassNotFoundException { 
 		ByteArrayInputStream bais = new 
