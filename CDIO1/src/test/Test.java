@@ -18,6 +18,10 @@ public class Test {
 		role.add("Pharmacist");
 		role.add("Operator");
 		UserDTO user = new UserDTO(12,"name","ini","cpr","password",role);		
+
+
+
+
 		DatabaseSaver.init();
 		System.out.println("init success");
 		try {
