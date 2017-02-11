@@ -97,6 +97,30 @@ public class TUIBasic implements IUserInterface {
 
 	}
 
+	@Override
+	public void displayMessage(String msg, Object... args) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public String getResponse(String msg, Object... args) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void deleteUser() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void quit() {
+		// TODO Auto-generated method stub
+		
+	}
+
 //	public void deleteUser()
 //	{
 //		System.out.println("Enter the ID of the person you want to delete \n"
