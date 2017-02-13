@@ -24,7 +24,8 @@ public class TUIController {
 	public void menu()
 	{
 		ui.displayMessage(s.getText(1));
-		while(true)
+		boolean running = true;
+		while(running)
 		{
 			String input = ui.getResponse(s.getText(0));
 			switch(input)
@@ -38,6 +39,7 @@ public class TUIController {
 			case "4": deleteUser();
 			break;
 			case "5": quit();
+			running = false;
 			break;
 			default : ui.displayMessage(s.getText(20));
 			break;
@@ -57,13 +59,13 @@ public class TUIController {
 		newUser.setCpr(cpr);
 		newUser.setIni(ini);
 		newUser.setPassword(psswrd);
-		newUser.setRoles(roles);
+		newUser.setRoles((ArrayList<String>)roles);
 		newUser.setUserID(userId);
 		newUser.setUserName(name);
-		System.out.println(psswrd);
 		try 
 		{
-			f.createUser(newUser);
+			if(ui.confirmInput())
+				f.createUser(newUser);
 		} 
 		catch (DALException e) {
 			System.out.println(e.getMessage());
@@ -77,10 +79,11 @@ public class TUIController {
 		{
 			List<UserDTO> users = f.getUserList();
 			ui.displayMessage(s.getText(2));
-			for(int i = 0; i<users.size();i++)
-			{
-				ui.displayMessage(".."+users.get(i));
-			}
+			if(users!=null)
+				for(int i = 0; i<users.size();i++)
+				{
+					ui.displayMessage(".."+users.get(i));
+				}
 		} catch (DALException e) 
 		{
 			System.out.println(e.getMessage());
@@ -258,16 +261,16 @@ public class TUIController {
 		String[] cprParts = cpr.split("-");
 		if(cprParts.length!=2 || cprParts[0].length()!=6 || cprParts[1].length()!=4)
 			return false;
-		
+
 		//Checking if the cpr contains anything other than numbers
 		for(char c : cprParts[0].toCharArray())
 			if(!(c>='0' && c<='9'))
 				return false;
-		
+
 		for(char c : cprParts[1].toCharArray())
 			if(!(c>='0' && c<='9'))
 				return false;
-		
+
 		return true;
 	}
 
@@ -356,17 +359,18 @@ public class TUIController {
 	{
 		try {
 			List<UserDTO> users = f.getUserList();
-			for(int i = 11; i<100; i++)
-			{
-				boolean idInUse = false;
-				for(int k = 0 ; k<users.size();k++)
+			if(users!=null)
+				for(int i = 11; i<100; i++)
 				{
-					if(i == users.get(i).getUserID())
-						idInUse = true;
+					boolean idInUse = false;
+					for(int k = 0 ; k<users.size();k++)
+					{
+						if(i == users.get(i).getUserID())
+							idInUse = true;
+					}
+					if(!idInUse)
+						return i;
 				}
-				if(!idInUse)
-					return i;
-			}
 		} catch (DALException e) {
 			System.out.println(e.getMessage());
 		}

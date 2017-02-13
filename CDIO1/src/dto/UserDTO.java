@@ -26,6 +26,11 @@ public class UserDTO implements Serializable{
 		this.roles = new ArrayList<String>(roles);
 	}
 	
+	public UserDTO()
+	{
+		
+	}
+	
 	public int getUserID() {
 		return userID;
 	}
