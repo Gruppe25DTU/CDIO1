@@ -2,6 +2,7 @@ package view;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import dal.IUserDAO;
 import dal.IUserDAO.DALException;
@@ -17,9 +18,10 @@ public class TUIBasic implements IUserInterface {
 		
 	}
 
-	public void menu()
+	public void showMenu(List<String> menuCommands)
 	{
-
+		for(String singlCom : menuCommands)
+			System.out.println(singlCom);
 	}
 
 	public void listUsers()
@@ -76,6 +78,12 @@ public class TUIBasic implements IUserInterface {
 		if(input.length() == 1 && input.equalsIgnoreCase("y"))
 			return true;
 		return false;
+	}
+
+	@Override
+	public void menu() {
+		// TODO Auto-generated method stub
+		
 	}
 	
 	
