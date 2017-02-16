@@ -21,6 +21,7 @@ public class DatabaseSaver implements IPersistency{
 	private static Connection conn;
 
 
+
 	/**
 	 * Initialize the connection
 	 */
@@ -90,7 +91,7 @@ public class DatabaseSaver implements IPersistency{
 					+ "cpr VARCHAR(11) NOT NULL, "
 					+ "password VARCHAR(30) NOT NULL,"
 					+ "role VARCHAR(256) NOT NULL, "
-					+ "PRIMARY KEY(userID,userName));";
+					+ "PRIMARY KEY(userID));";
 
 
 			PreparedStatement create = conn.prepareStatement(statement);
@@ -144,52 +145,87 @@ public class DatabaseSaver implements IPersistency{
 	@SuppressWarnings("unchecked")
 	public static ArrayList<UserDTO> getUserList() {
 		ArrayList<UserDTO> list = new ArrayList<UserDTO>();
-		
+
+
+		try {
+			String statement = "select * from users;";
+			PreparedStatement stmt = conn.prepareStatement(statement);
+
+			boolean results = stmt.execute();
+
+			//Loop through the available result sets.
+			do {
+				if(results) {
+					ResultSet result = stmt.getResultSet();
+
+					//Show data from the result set.
+					while (result.next()) {
+						ArrayList<String> information = new ArrayList<String>();
+						ArrayList<String> roles = new ArrayList<String>();
+
+						information.add(result.getString("userID"));
+						System.out.println(result.getString("userID"));
+						information.add(result.getString("userName"));
+						information.add(result.getString("ini"));
+						information.add(result.getString("cpr"));
+						information.add(result.getString("password"));
+
+
+						roles.addAll((ArrayList<String>)anyDeserialize(result.getString("role")));	
+						list.add(arrayToUserDTO(information,roles));
+
+
+					}
+
+					result.close();
+				}
+				results = stmt.getMoreResults();
+			} while(results);
+			stmt.close();
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+
+
+		return list;
+	}
+
+	public static ArrayList<String> getUserIDList() {
+		String statement = "select userID from users;";
+		ArrayList<String> list = new ArrayList<String>();
 		
 		try {
-		String statement = "select * from users;";
-		PreparedStatement stmt = conn.prepareStatement(statement);
+			PreparedStatement stmt = conn.prepareStatement(statement);
+			boolean results = stmt.execute();
+			//Loop through the available result sets.
+			do {
+				if(results) {
+					ResultSet result = stmt.getResultSet();
+					//Add data to ArrayList
+					while (result.next()) {
+						list.add(result.getString("userID"));						
+					}
 
-		boolean results = stmt.execute();
-
-		//Loop through the available result sets.
-		do {
-			if(results) {
-				ResultSet result = stmt.getResultSet();
-
-				//Show data from the result set.
-				while (result.next()) {
-					ArrayList<String> information = new ArrayList<String>();
-					ArrayList<String> roles = new ArrayList<String>();
-
-					information.add(result.getString("userID"));
-					System.out.println(result.getString("userID"));
-					information.add(result.getString("userName"));
-					information.add(result.getString("ini"));
-					information.add(result.getString("cpr"));
-					information.add(result.getString("password"));
-
-
-					roles.addAll((ArrayList<String>)anyDeserialize(result.getString("role")));	
-					list.add(arrayToUserDTO(information,roles));
-
-				
+					result.close();
 				}
-
-				result.close();
-			}
-			System.out.println();
-			results = stmt.getMoreResults();
-		} while(results);
-		stmt.close();
+				results = stmt.getMoreResults();
+			} while(results);
+			stmt.close();
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return list;
+		
 	}
-	catch (Exception e) {
-		e.printStackTrace();
-	}
 
 
-	return list;
-}
+
+
+
+
 
 /**
  * Saves a non existing user. 
