@@ -1,6 +1,7 @@
 package view;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
@@ -11,14 +12,58 @@ import dto.UserDTO;
 
 public class TUIController {
 
+  private class Command implements Runnable {
+    
+    Runnable method;
+    String sdesc, help;
+    
+    public Command(Runnable method, String sdesc, String help) {
+      this.method = method;
+      this.sdesc = sdesc;
+      this.help = help;
+    }
+    
+    @Override
+    public String toString() {
+      return sdesc;
+    }
+    
+    public String getHelp() {
+      return help;
+    }
+    
+    @Override
+    public void run() {
+      method.run();
+    }
+    
+  }
+  
 	private IUserInterface ui;
 	private IUserDAO f;
 	private TUIBasic_Strings s;
+	private HashMap<String, Command> commandMap;
+	
 	public TUIController(IUserInterface ui, IUserDAO f) 
 	{
 		this.f = f;
 		this.ui = ui;
 		s = new TUIBasic_Strings();
+	}
+	
+	public void initCommandList() {
+    Command create = new Command(this::createUser, "Create a new User", "Help for Create User goes here!");
+    Command list = new Command(this::listUsers, "List all exisiting Users", "Help for List goes here!");
+    Command update = new Command(this::updateUser, "Update an exisiting User", "Help for Update User goes here!");
+    Command delete = new Command(this::createUser, "Delete an existing User", "Help for Delete User goes here!");
+    Command quit = new Command(this::quit, "Quit the program", "Help for Quit goes here!");
+    
+    commandMap.put("create", create);
+    commandMap.put("2", list);
+    commandMap.put("3", update);
+    commandMap.put("4", delete);
+    commandMap.put("5", quit);
+    
 	}
 
 	public void menu()
@@ -28,21 +73,12 @@ public class TUIController {
 		while(running)
 		{
 			String input = ui.getResponse(s.getText(0));
-			switch(input)
-			{
-			case "1": createUser();
-			break;
-			case "2": listUsers();
-			break;
-			case "3": updateUser();
-			break;
-			case "4": deleteUser();
-			break;
-			case "5": quit();
-			running = false;
-			break;
-			default : ui.displayMessage(s.getText(20));
-			break;
+			Command cmd;
+			if ((cmd = commandMap.get(input)) != null) {
+			  cmd.run();
+			}
+			for(String key : commandMap.keySet()) {
+			  System.out.println(key + " -- " + commandMap.get(key));
 			}
 		}
 	}
