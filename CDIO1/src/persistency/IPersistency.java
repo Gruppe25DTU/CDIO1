@@ -12,5 +12,6 @@ public interface IPersistency {
 	UserDTO getUser(int id);
 	List<UserDTO> getUserList();
 	List<Integer> getUsedIds();
+	void quit();
 	
 }
