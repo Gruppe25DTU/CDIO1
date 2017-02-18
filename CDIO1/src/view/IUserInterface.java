@@ -1,14 +1,16 @@
 package view;
 
+import inputDevices.Keyboard;
+
 import java.util.List;
 
 public interface IUserInterface {
 
 	void displayMessage(String msg, Object...args);
-	String getResponse(String msg, Object...args);
-	int getInt(String msg, Object...args);
+	String getResponse(String msg, Object...args) throws Keyboard.DALKeyboardInterruptException;
+	int getInt(String msg, Object...args) throws Keyboard.DALKeyboardInterruptException;
 	String getLastInput();
-	boolean confirmInput();
+	boolean confirmInput() throws Keyboard.DALKeyboardInterruptException;
 	/**
 	 * Shows a list of all the  available options
 	 * And asks for input

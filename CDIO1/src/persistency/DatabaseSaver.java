@@ -170,7 +170,6 @@ public class DatabaseSaver implements IPersistency{
 						ArrayList<String> roles = new ArrayList<String>();
 
 						information.add(result.getString("userID"));
-						System.out.println(result.getString("userID"));
 						information.add(result.getString("userName"));
 						information.add(result.getString("ini"));
 						information.add(result.getString("cpr"));

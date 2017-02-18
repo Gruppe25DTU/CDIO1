@@ -3,14 +3,20 @@ package view;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Random;
 
 import Stringbank.TUIBasic_Strings;
 import dal.IUserDAO;
 import dal.IUserDAO.DALException;
 import dto.UserDTO;
+import inputDevices.Keyboard;
 
 public class TUIController {
+
+	private IUserInterface ui;
+	private IUserDAO f;
+	private TUIBasic_Strings s;
+	private HashMap<String, Command> commandMap;
+	private boolean running;
 
   private class Command implements Runnable {
     
@@ -39,12 +45,6 @@ public class TUIController {
     }
     
   }
-  
-	private IUserInterface ui;
-	private IUserDAO f;
-	private TUIBasic_Strings s;
-	private HashMap<String, Command> commandMap;
-	private boolean running;
 	
 	public TUIController(IUserInterface ui, IUserDAO f) 
 	{
@@ -55,7 +55,7 @@ public class TUIController {
 	}
 	
 	public void initCommandList() {
-	commandMap = new HashMap<String, Command>();
+	commandMap = new HashMap<>();
     Command create = new Command(this::createUser, "Create a new User", "Help for Create User goes here!");
     Command list = new Command(this::listUsers, "List all existing Users", "Help for List goes here!");
     Command update = new Command(this::updateUser, "Update an existing User", "Help for Update User goes here!");
@@ -73,16 +73,23 @@ public class TUIController {
 	public void menu()
 	{
 		initCommandList();
-		List<String> menu = new ArrayList<String>();
+		List<String> menu = new ArrayList<>();
 		for(String key : commandMap.keySet()) {
 			  menu.add("["+key+"]" + " : " + commandMap.get(key));
 		}
 
-		while(running)
-		{
-			ui.displayMessage("\n" + s.getText(1));
+        ui.displayMessage("\n" + s.getText(1));
+		while(running) {
+			//TODO: Stringbank
 			ui.showMenu(menu);
-			String input = ui.getResponse("");
+			String input = "";
+			try {
+				input = ui.getResponse("");
+			} catch (Keyboard.DALKeyboardInterruptException e) {
+				e.printStackTrace();
+				//TODO: Fix quit order / system!
+				ui.quit();
+			}
 			Command cmd;
 			if ((cmd = commandMap.get(input)) != null) {
 			  cmd.run();
@@ -93,34 +100,31 @@ public class TUIController {
 
 	public void createUser()
 	{
-		try {
+		try
+		{
+			String name, ini, cpr;
 			UserDTO newUser = f.createUser();
-			//TODO
-			//int userId = generateUserId();
-			String name = chooseName();
-			String ini = chooseInitials();
-			String cpr = chooseCPR();
+
+			do{ name = chooseName(); } while (!f.setName(newUser, name));
+			do{ ini = chooseInitials();} while (!f.setInitials(newUser, ini));
+			do{ cpr = chooseCPR();} while (!f.setCpr(newUser, cpr));
 			List<String> roles = chooseRoles();
-			String psswrd = generatePassword();
-			newUser.setCpr(cpr);
-			newUser.setIni(ini);
-			newUser.setPassword(psswrd);
-			newUser.setRoles((ArrayList<String>)roles);
-			//TODO
-			//newUser.setUserID(userId);
-			newUser.setUserName(name);
+			f.setRoles(newUser, roles);
 			try
 			{
+				ui.displayMessage("User to be saved:\n" + newUser);
 				if(ui.confirmInput())
 					f.saveUser(newUser);
 			}
-			catch (DALException e) {
-				System.out.println(e.getMessage());
+			catch (DALException|Keyboard.DALKeyboardInterruptException e) {
+				e.printStackTrace();
 			}
 		} catch (DALException e) {
 			e.printStackTrace();
+		} catch (Keyboard.DALKeyboardInterruptException e) {
+			e.printStackTrace();
+			return;
 		}
-
 	}
 
 	public void listUsers()
@@ -147,8 +151,13 @@ public class TUIController {
 		UserDTO user;
 		while(true)
 		{
-
-			int userId = ui.getInt("");
+			int userId = -1;
+			try {
+				userId = ui.getInt("");
+			} catch (Keyboard.DALKeyboardInterruptException e) {
+				e.printStackTrace();
+				return;
+			}
 			String input = ui.getLastInput();
 			if(input.equals("help"))
 				listUsers();
@@ -187,8 +196,14 @@ public class TUIController {
 		while(changing)
 		{
 			ui.displayMessage(s.getText(5), user.getUserName());
-			String input = ui.getResponse(s.getText(6));
-
+			String input = null;
+			try {
+				input = ui.getResponse(s.getText(6));
+			} catch (Keyboard.DALKeyboardInterruptException e) {
+				e.printStackTrace();
+				return;
+			}
+/*
 			switch(input)
 			{
 			case "1": user.setUserName(chooseName());
@@ -202,7 +217,7 @@ public class TUIController {
 			default : ui.displayMessage(s.getText(20));
 			break;
 			}
-
+*/
 		}
 	}
 
@@ -211,36 +226,38 @@ public class TUIController {
 		ui.displayMessage(s.getText(7));
 		while(true)
 		{
-			int userId = ui.getInt("");
-			String input = ui.getLastInput();
-			if(input.equals("help"))
-			{
-				listUsers();
+			int userId = -1;
+			try {
+				userId = ui.getInt("");
+			} catch (Keyboard.DALKeyboardInterruptException e) {
+				e.printStackTrace();
 			}
-			else
+			if(userId!=-1)
 			{
-				if(userId!=-1)
-				{
-					try {
-						if(ui.confirmInput())
-						{
-							ui.displayMessage(s.getText(8), userId);
-							f.deleteUser(userId);
-							break;
-						}
-						else
-							break;
-
-					} catch (DALException e) {
-						System.out.println(e.getMessage());
+				try {
+					UserDTO user = f.getUser(userId);
+					if (user != null) {
+						ui.displayMessage("Deleting user:\n" + user);
 					}
+					if(ui.confirmInput())
+					{
+						ui.displayMessage(s.getText(8), userId);
+						f.deleteUser(userId);
+						break;
+					}
+					else
+						break;
+
+				} catch (DALException e) {
+					e.printStackTrace();
+				} catch (Keyboard.DALKeyboardInterruptException e) {
+					e.printStackTrace();
+					return;
 				}
-				else
-					ui.displayMessage(s.getText(20));
-
-
 			}
-
+			else {
+				ui.displayMessage(s.getText(20));
+			}
 		}
 	}
 
@@ -250,83 +267,20 @@ public class TUIController {
 		ui.quit();
 	}
 
-	private String chooseName()
-	{
-		while(true)
-		{
-			String input = ui.getResponse(s.getText(9));
-			if(input.length()<2)
-				ui.displayMessage("Name too short");
-			else if(input.length()>20)
-				ui.displayMessage("Name too long");
-			else
-				return input;
-		}
-
+	private String chooseName() throws Keyboard.DALKeyboardInterruptException {
+		return ui.getResponse(s.getText(9));
 	}
 
-	private String chooseInitials()
-	{
-		while(true)
-		{
-			String input = ui.getResponse(s.getText(10));
-
-			if(containsNumbers(input))
-				ui.displayMessage("initials can't contain numbers");
-			else if(input.length()<2)
-				ui.displayMessage("Not enough initials");
-			else if(input.length()>4)
-				ui.displayMessage("Too many Initials");
-			else
-				return input;
-		}
+	private String chooseInitials() throws Keyboard.DALKeyboardInterruptException {
+		return ui.getResponse(s.getText(10));
 	}
 
-	private boolean containsNumbers(String str)
-	{
-		for(char c : str.toCharArray())
-		{
-			if(c>='0' && c<= '9')
-				return true;
-		}
-		return false;
+	private String chooseCPR() throws Keyboard.DALKeyboardInterruptException {
+		return ui.getResponse(s.getText(11));
 	}
 
-	private String chooseCPR()
-	{
-		while(true)
-		{
-			String input = ui.getResponse(s.getText(11));
-			if(correctCPRFormat(input))
-				return input;
-			else
-				ui.displayMessage("Incorrect CPR format");
-		}
-	}
-
-	private boolean correctCPRFormat(String cpr)
-	{
-		//CPR number has to be symbols long
-		if(cpr.length()!=11)
-			return false;
-		//checking if the cprNumber has the hyphen and that each side of hyphen is as long as it should be
-		String[] cprParts = cpr.split("-");
-		if(cprParts.length!=2 || cprParts[0].length()!=6 || cprParts[1].length()!=4)
-			return false;
-
-		//Checking if the cpr contains anything other than numbers
-		for(char c : cprParts[0].toCharArray())
-			if(!(c>='0' && c<='9'))
-				return false;
-
-		for(char c : cprParts[1].toCharArray())
-			if(!(c>='0' && c<='9'))
-				return false;
-
-		return true;
-	}
-
-	private List<String> chooseRoles()
+	//TODO
+	private List<String> chooseRoles() throws Keyboard.DALKeyboardInterruptException
 	{
 		List<String> roles = new ArrayList<String>();
 		List<String> chosenRoles = new ArrayList<String>();
@@ -364,7 +318,7 @@ public class TUIController {
 					roles.remove(Integer.parseInt(input)-1);
 			}
 			else
-				System.out.println(s.getText(20));
+				ui.displayMessage(s.getText(20));
 
 			String chosenRolesMsg = s.getText(19);
 			for(int i = 0; i<chosenRoles.size();i++)
@@ -377,57 +331,6 @@ public class TUIController {
 		return chosenRoles;
 	}
 
-	private String generatePassword()
-	{
-		Random gen = new Random();
-		String password = "";
-		//Randomly decides whether the password should have 3-5 Capital letters, 3-5 small letters, and 3-5 numbers
-		int cpLet = gen.nextInt(3)+3;
-		int smlLet = gen.nextInt(3)+3;
-		int nmbs = gen.nextInt(3)+3;
-		int[] all = {cpLet,smlLet,nmbs};
-		for(int i = 0; i<cpLet+smlLet+nmbs;i++)
-		{
-			int index = gen.nextInt(3);
-			if(all[index]>0)
-			{
-				char c = 0;
-				all[index]--;
-				if(index == 0)
-					c += gen.nextInt(26)+'A';
-				else if(index == 1)
-					c += gen.nextInt(26)+'a';
-				else
-					c += gen.nextInt(10)+'0';
-				password += c;
-			}
-			else
-				i--;
-		}
-		return password;
-	}
-
-	private int generateUserId()
-	{
-		try {
-			List<UserDTO> users = f.getUserList();
-			if(users!=null)
-				for(int i = 11; i<100; i++)
-				{
-					boolean idInUse = false;
-					for(int k = 0 ; k<users.size();k++)
-					{
-						if(i == users.get(i).getUserID())
-							idInUse = true;
-					}
-					if(!idInUse)
-						return i;
-				}
-		} catch (DALException e) {
-			e.printStackTrace();
-		}
-		return -1;
-	}
 	public void run()
 	{
 		this.menu();

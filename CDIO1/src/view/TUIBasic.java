@@ -55,13 +55,13 @@ public class TUIBasic implements IUserInterface {
 	}
 
 	@Override
-	public String getResponse(String msg, Object...args) {
+	public String getResponse(String msg, Object...args) throws Keyboard.DALKeyboardInterruptException {
 		System.out.println(String.format(msg, args));
 		return keyb.nextString();
 	}
 
 	@Override
-	public int getInt(String msg, Object... args) {
+	public int getInt(String msg, Object... args) throws Keyboard.DALKeyboardInterruptException {
 		System.out.println(String.format(msg, args));
 		return keyb.nextInt();
 	}
@@ -72,7 +72,7 @@ public class TUIBasic implements IUserInterface {
 	}
 
 	@Override
-	public boolean confirmInput() {
+	public boolean confirmInput() throws Keyboard.DALKeyboardInterruptException {
 		System.out.println("Are you sure? (y/n)");
 		String input = keyb.nextString();
 		return input.length() == 1 && input.equalsIgnoreCase("y");
