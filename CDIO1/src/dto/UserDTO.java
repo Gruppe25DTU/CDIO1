@@ -23,14 +23,26 @@ public class UserDTO implements Serializable{
 		this.ini = ini;
 		this.cpr = cpr;
 		this.password = password;
-		this.roles = new ArrayList<String>(roles);
+		this.roles = new ArrayList<>(roles);
 	}
 	
 	public UserDTO()
 	{
 		
 	}
-	
+
+	public UserDTO(UserDTO user)
+	{
+		this.userID = user.userID;
+		this.userName = user.userName;
+		this.ini = user.ini;
+		this.cpr = user.cpr;
+		this.password = user.password;
+		if (user.roles != null) {
+			this.roles = new ArrayList<>(user.roles);
+		}
+	}
+
 	public int getUserID() {
 		return userID;
 	}

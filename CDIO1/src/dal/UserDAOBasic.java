@@ -140,6 +140,11 @@ public class UserDAOBasic implements IUserDAO {
 		return true;
 	}
 
+	@Override
+	public void updateUser(UserDTO user, int originalID) {
+		persistencyManager.updateUser(user, originalID);
+	}
+
 	public String getRequirement(Runnable method) {
 	    return "";
     }

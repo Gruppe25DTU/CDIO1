@@ -23,6 +23,7 @@ public interface IUserDAO {
 	Set<Integer> getAvailableIDs() throws DALException;
     Map<String, Rule> ruleList = new HashMap<> ();
     boolean setRoles(UserDTO user, List<String> roles);
+    void updateUser(UserDTO selected, int selectedOriginalID);
 
     class DALException extends Exception {
 
