@@ -1,5 +1,7 @@
 package view;
 
+import java.util.List;
+
 public interface IUserInterface {
 
 	void displayMessage(String msg, Object...args);
@@ -12,6 +14,8 @@ public interface IUserInterface {
 	 * And asks for input
 	 */
 	void menu();
+	
+	void showMenu(List<String> menuCommands);
 
 	/**
 	 * Lists all the users on the disk / database

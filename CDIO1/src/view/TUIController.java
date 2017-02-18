@@ -21,6 +21,7 @@ public class TUIController {
       this.method = method;
       this.sdesc = sdesc;
       this.help = help;
+
     }
     
     @Override
@@ -31,6 +32,8 @@ public class TUIController {
     public String getHelp() {
       return help;
     }
+    
+
     
     @Override
     public void run() {
@@ -43,22 +46,25 @@ public class TUIController {
 	private IUserDAO f;
 	private TUIBasic_Strings s;
 	private HashMap<String, Command> commandMap;
+	private boolean running;
 	
 	public TUIController(IUserInterface ui, IUserDAO f) 
 	{
 		this.f = f;
 		this.ui = ui;
 		s = new TUIBasic_Strings();
+		running = true;
 	}
 	
 	public void initCommandList() {
+	commandMap = new HashMap<String, Command>();
     Command create = new Command(this::createUser, "Create a new User", "Help for Create User goes here!");
-    Command list = new Command(this::listUsers, "List all exisiting Users", "Help for List goes here!");
-    Command update = new Command(this::updateUser, "Update an exisiting User", "Help for Update User goes here!");
+    Command list = new Command(this::listUsers, "List all existing Users", "Help for List goes here!");
+    Command update = new Command(this::updateUser, "Update an existing User", "Help for Update User goes here!");
     Command delete = new Command(this::createUser, "Delete an existing User", "Help for Delete User goes here!");
     Command quit = new Command(this::quit, "Quit the program", "Help for Quit goes here!");
     
-    commandMap.put("create", create);
+    commandMap.put("1", create);
     commandMap.put("2", list);
     commandMap.put("3", update);
     commandMap.put("4", delete);
@@ -68,30 +74,34 @@ public class TUIController {
 
 	public void menu()
 	{
+		initCommandList();
+		List<String> menu = new ArrayList<String>();
+		for(String key : commandMap.keySet()) {
+			  menu.add("["+key+"]" + " : " + commandMap.get(key));
+			}
+		
 		ui.displayMessage(s.getText(1));
-		boolean running = true;
+		ui.showMenu(menu);
 		while(running)
 		{
-			String input = ui.getResponse(s.getText(0));
+			String input = ui.getResponse("");
 			Command cmd;
 			if ((cmd = commandMap.get(input)) != null) {
 			  cmd.run();
 			}
-			for(String key : commandMap.keySet()) {
-			  System.out.println(key + " -- " + commandMap.get(key));
-			}
+			
 		}
 	}
 
 	public void createUser()
 	{
+		UserDTO newUser = new UserDTO();
+		int userId = generateUserId();
 		String name = chooseName();
 		String ini = chooseInitials();
 		String cpr = chooseCPR();
 		List<String> roles = chooseRoles();
-		String psswrd = generatePassword();
-		int userId = generateUserId();
-		UserDTO newUser = new UserDTO();
+		String psswrd = generatePassword();	
 		newUser.setCpr(cpr);
 		newUser.setIni(ini);
 		newUser.setPassword(psswrd);
@@ -149,7 +159,7 @@ public class TUIController {
 					if(user != null)
 					{
 						chooseWhatToUpdate(user);
-						f.updateUser(user);
+						//f.updateUser(user);
 						break;
 
 					}
@@ -180,7 +190,7 @@ public class TUIController {
 			break;
 			case "2": user.setIni(chooseInitials());
 			break;
-			case "3": user.setRoles(chooseRoles());
+			case "3": user.setRoles((ArrayList<String>)chooseRoles());
 			break;
 			case "4": changing = false;
 			break;
@@ -231,6 +241,7 @@ public class TUIController {
 
 	private void quit()
 	{
+		running = false;
 		ui.quit();
 	}
 

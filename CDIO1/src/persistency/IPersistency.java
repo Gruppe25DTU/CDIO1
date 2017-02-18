@@ -1,7 +1,6 @@
 package persistency;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import dto.UserDTO;
 
@@ -14,5 +13,6 @@ public interface IPersistency {
 	ArrayList<UserDTO> getUserList();
 	ArrayList<String> getUserIDList();
 	void deleteUser(int userID);
+	void quit();
 	
 }
