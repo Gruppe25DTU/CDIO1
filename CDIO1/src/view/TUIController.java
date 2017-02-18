@@ -15,25 +15,23 @@ public class TUIController {
   private class Command implements Runnable {
     
     Runnable method;
-    String sdesc, help;
+    String desc, help;
     
-    public Command(Runnable method, String sdesc, String help) {
+    public Command(Runnable method, String desc, String help) {
       this.method = method;
-      this.sdesc = sdesc;
+      this.desc = desc;
       this.help = help;
 
     }
     
     @Override
     public String toString() {
-      return sdesc;
+      return desc;
     }
     
     public String getHelp() {
       return help;
     }
-    
-
     
     @Override
     public void run() {
@@ -61,7 +59,7 @@ public class TUIController {
     Command create = new Command(this::createUser, "Create a new User", "Help for Create User goes here!");
     Command list = new Command(this::listUsers, "List all existing Users", "Help for List goes here!");
     Command update = new Command(this::updateUser, "Update an existing User", "Help for Update User goes here!");
-    Command delete = new Command(this::createUser, "Delete an existing User", "Help for Delete User goes here!");
+    Command delete = new Command(this::deleteUser, "Delete an existing User", "Help for Delete User goes here!");
     Command quit = new Command(this::quit, "Quit the program", "Help for Quit goes here!");
     
     commandMap.put("1", create);
@@ -78,12 +76,12 @@ public class TUIController {
 		List<String> menu = new ArrayList<String>();
 		for(String key : commandMap.keySet()) {
 			  menu.add("["+key+"]" + " : " + commandMap.get(key));
-			}
-		
-		ui.displayMessage(s.getText(1));
-		ui.showMenu(menu);
+		}
+
 		while(running)
 		{
+			ui.displayMessage("\n" + s.getText(1));
+			ui.showMenu(menu);
 			String input = ui.getResponse("");
 			Command cmd;
 			if ((cmd = commandMap.get(input)) != null) {
@@ -95,26 +93,32 @@ public class TUIController {
 
 	public void createUser()
 	{
-		UserDTO newUser = new UserDTO();
-		int userId = generateUserId();
-		String name = chooseName();
-		String ini = chooseInitials();
-		String cpr = chooseCPR();
-		List<String> roles = chooseRoles();
-		String psswrd = generatePassword();	
-		newUser.setCpr(cpr);
-		newUser.setIni(ini);
-		newUser.setPassword(psswrd);
-		newUser.setRoles((ArrayList<String>)roles);
-		newUser.setUserID(userId);
-		newUser.setUserName(name);
-		try 
-		{
-			if(ui.confirmInput())
-				f.createUser(newUser);
-		} 
-		catch (DALException e) {
-			System.out.println(e.getMessage());
+		try {
+			UserDTO newUser = f.createUser();
+			//TODO
+			//int userId = generateUserId();
+			String name = chooseName();
+			String ini = chooseInitials();
+			String cpr = chooseCPR();
+			List<String> roles = chooseRoles();
+			String psswrd = generatePassword();
+			newUser.setCpr(cpr);
+			newUser.setIni(ini);
+			newUser.setPassword(psswrd);
+			newUser.setRoles((ArrayList<String>)roles);
+			//TODO
+			//newUser.setUserID(userId);
+			newUser.setUserName(name);
+			try
+			{
+				if(ui.confirmInput())
+					f.saveUser(newUser);
+			}
+			catch (DALException e) {
+				System.out.println(e.getMessage());
+			}
+		} catch (DALException e) {
+			e.printStackTrace();
 		}
 
 	}
@@ -132,7 +136,8 @@ public class TUIController {
 				}
 		} catch (DALException e) 
 		{
-			System.out.println(e.getMessage());
+			e.printStackTrace();
+			ui.displayMessage("Unable to retrieve user list!");
 		}
 	}
 
@@ -419,7 +424,7 @@ public class TUIController {
 						return i;
 				}
 		} catch (DALException e) {
-			System.out.println(e.getMessage());
+			e.printStackTrace();
 		}
 		return -1;
 	}

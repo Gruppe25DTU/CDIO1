@@ -75,9 +75,7 @@ public class TUIBasic implements IUserInterface {
 	public boolean confirmInput() {
 		System.out.println("Are you sure? (y/n)");
 		String input = keyb.nextString();
-		if(input.length() == 1 && input.equalsIgnoreCase("y"))
-			return true;
-		return false;
+		return input.length() == 1 && input.equalsIgnoreCase("y");
 	}
 
 	@Override

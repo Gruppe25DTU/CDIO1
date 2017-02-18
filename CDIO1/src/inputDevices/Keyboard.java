@@ -15,7 +15,7 @@ public class Keyboard {
 	
 	public int nextInt()
 	{
-		String input  = keyb.nextLine();
+		String input  = keyb.nextLine().trim();
 		lastInput = input;
 		int result = -1;
 		
@@ -33,7 +33,7 @@ public class Keyboard {
 	
 	public String nextString()
 	{
-		lastInput = keyb.nextLine();
+		lastInput = keyb.nextLine().trim();
 		return lastInput;
 	}
 	

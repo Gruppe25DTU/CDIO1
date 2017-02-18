@@ -48,7 +48,14 @@ public class UserDAOBasic implements IUserDAO {
 		return user;
 	}
 
-	@Override
+    @Override
+    public boolean saveUser(UserDTO user) throws DALException {
+	    //TODO: Validate
+        persistencyManager.save(user);
+        return false;
+    }
+
+    @Override
 	public boolean setID(UserDTO user, int id) throws DALException {
 		//TODO: Validate
 		user.setUserId(id);
@@ -110,5 +117,9 @@ public class UserDAOBasic implements IUserDAO {
 		}
 		return availableIDs;
 	}
+
+	public String getRequirement(Runnable method) {
+	    return "";
+    }
 
 }

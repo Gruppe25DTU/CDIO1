@@ -2,6 +2,7 @@ package dal;
 
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -13,6 +14,7 @@ public interface IUserDAO {
 	UserDTO getUser(int userId) throws DALException;
 	List<UserDTO> getUserList() throws DALException;
 	UserDTO createUser() throws DALException;
+	boolean saveUser(UserDTO user) throws DALException;
 	boolean setID(UserDTO user, int id) throws DALException;
 	boolean setName(UserDTO user, String name) throws DALException;
 	boolean setInitials(UserDTO user, String initials) throws DALException;
@@ -22,9 +24,9 @@ public interface IUserDAO {
 	boolean deleteUser(int userId) throws DALException;
 	Set<Integer> getAvailableIDs() throws DALException;
 
-  ArrayList<Rule> ruleList = new ArrayList<Rule> ();
+  HashMap<Runnable, Rule> ruleList = new HashMap<> ();
   
-	public class DALException extends Exception {
+	class DALException extends Exception {
 
 		/**
 		 * 
@@ -60,17 +62,22 @@ public interface IUserDAO {
     }
   }
 	
-	default void createRuleSet() {
-    int minID = 11;
-    int maxID = 99;
-    Predicate<Integer> pred = new Predicate<Integer>() {
-      @Override
-      public boolean test(Integer t) {
-        return t > minID && t < maxID;
-      };
-    };
-    Rule rule = new Rule("ID Skal v�re mellem" + minID + " og " + maxID, pred);
-    ruleList.add(rule);
+	default void createRuleSet(IUserDAO userDAO) {
+        int minID = 11;
+        int maxID = 99;
+        Predicate<Integer> pred = new Predicate<Integer>() {
+          @Override
+          public boolean test(Integer t) {
+            return t > minID && t < maxID;
+          };
+        };
+        Rule rule = new Rule("ID must be between" + minID + " and " + maxID, pred);
+        try {
+            //TODO
+            //ruleList.put(userDAO::setID, rule);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 	}
 
 }

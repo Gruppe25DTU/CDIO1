@@ -10,10 +10,10 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import javax.xml.bind.DatatypeConverter;
+import javax.xml.crypto.Data;
 
 import dto.UserDTO;
 
@@ -21,6 +21,9 @@ public class DatabaseSaver implements IPersistency{
 	private static Connection conn;
 
 
+	public DatabaseSaver() {
+		load();
+	}
 
 	/**
 	 * Initialize the connection
@@ -44,12 +47,14 @@ public class DatabaseSaver implements IPersistency{
 		String ini = user.getIni();
 		String cpr = user.getCpr();
 		String password = user.getPassword();
-		List<String> role = user.getRoles();
 		String roles = "";
-		try {
-			roles = anySerialize(role);
-		} catch (IOException e1) {
-			e1.printStackTrace();
+
+		//TODO: Method in UserDTO?
+		for (String role : user.getRoles()) {
+			roles += ";" + role;
+		}
+		if (roles != "") {
+			roles = roles.substring(1);
 		}
 
 		String  consistantStatement = "INSERT INTO users VALUES('%d','%s','%s','%s','%s','%s');";
@@ -79,7 +84,6 @@ public class DatabaseSaver implements IPersistency{
 	 * password <br>
 	 * role <br>
 	 * userID is the primary key <br>
-	 * @param statement
 	 * @throws Exception
 	 */
 	private static void createTable() throws Exception {
@@ -113,16 +117,16 @@ public class DatabaseSaver implements IPersistency{
 	private static Connection getConnection() throws Exception {
 		try{
 			String driver = "com.mysql.jdbc.Driver";
-			String url = "jdbc:mysql://localhost:3306/cdio01";
-			String username = "root";
-			String password = "";
+			String url = "jdbc:mysql://localhost:3306/cdio1";
+			String username = "cdio";
+			String password = "Gruppe25DTU!CDIO";
 			Class.forName(driver);
 
 			Connection conn = DriverManager.getConnection(url,username,password);
 			System.out.println("Connected");
 			return conn;
 		} catch(Exception e) {
-			System.out.println(e);
+			e.printStackTrace();
 		}
 
 
@@ -130,7 +134,7 @@ public class DatabaseSaver implements IPersistency{
 	}
 
 	@Override
-	public void deleteUser(int userID) {
+	public boolean deleteUser(int userID) {
 		String consistantStatement = "delete from users where userID = %d";
 		consistantStatement = String.format(consistantStatement, userID);
 		try {
@@ -140,7 +144,8 @@ public class DatabaseSaver implements IPersistency{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	}
+        return false;
+    }
 
 	@Override
 	@SuppressWarnings("unchecked")
@@ -172,10 +177,9 @@ public class DatabaseSaver implements IPersistency{
 						information.add(result.getString("password"));
 
 
-						roles.addAll((ArrayList<String>)anyDeserialize(result.getString("role")));	
+						//TODO ("role" and) ";" should be a constant string
+						roles.addAll(Arrays.asList(result.getString("role").split(";")));
 						list.add(arrayToUserDTO(information,roles));
-
-
 					}
 
 					result.close();
@@ -187,15 +191,13 @@ public class DatabaseSaver implements IPersistency{
 		catch (Exception e) {
 			e.printStackTrace();
 		}
-
-
 		return list;
 	}
 
 	@Override
-	public ArrayList<String> getUserIDList() {
+	public Set<Integer> getUserIDList() {
 		String statement = "select userID from users;";
-		ArrayList<String> list = new ArrayList<String>();
+		Set<Integer> list = new HashSet<>();
 
 		try {
 			PreparedStatement stmt = conn.prepareStatement(statement);
@@ -206,7 +208,7 @@ public class DatabaseSaver implements IPersistency{
 					ResultSet result = stmt.getResultSet();
 					//Add data to ArrayList
 					while (result.next()) {
-						list.add(result.getString("userID"));						
+						list.add(result.getInt("userID"));
 					}
 
 					result.close();
@@ -245,16 +247,18 @@ public class DatabaseSaver implements IPersistency{
 		String ini = user.getIni();
 		String cpr = user.getCpr();
 		String password = user.getPassword();
-		String role = "";
-		try {
-			role = anySerialize(user.getRoles());
-		} catch (IOException e1) {
-			System.out.println("Unable to serialize roles at updateUser in DatabaseSaver");
-			e1.printStackTrace();
+		String roles = "";
+
+		//TODO: Method in UserDTO?
+		for (String role : user.getRoles()) {
+			roles += ";" + role;
+		}
+		if (roles != "") {
+			roles = roles.substring(1);
 		}
 
 
-		String statement = String.format(consistantStatement,newUserID,userName,ini,cpr,password,role,userID);
+		String statement = String.format(consistantStatement,newUserID,userName,ini,cpr,password,roles,userID);
 
 		try {
 			PreparedStatement update = conn.prepareStatement(statement);
@@ -301,37 +305,6 @@ public class DatabaseSaver implements IPersistency{
 	}
 
 	/**
-	 * Serialize an object.
-	 * @param object o.
-	 * @return serializes object in form of a string
-	 * @throws IOException
-	 */
-	private static String anySerialize(Object o) throws IOException { 
-		ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
-		ObjectOutputStream oos = new ObjectOutputStream(baos); 
-		oos.writeObject(o); 
-		oos.close(); 
-		return DatatypeConverter.printBase64Binary(baos.toByteArray()); 
-	} 
-
-	/**
-	 * Deserialize a string:
-	 * @param s
-	 * @return
-	 * @throws IOException
-	 * @throws ClassNotFoundException
-	 */
-	private static Object anyDeserialize(String s) throws IOException, 
-	ClassNotFoundException { 
-		ByteArrayInputStream bais = new 
-				ByteArrayInputStream(DatatypeConverter.parseBase64Binary(s)); 
-		ObjectInputStream ois = new ObjectInputStream(bais); 
-		Object o = ois.readObject(); 
-		ois.close(); 
-		return o; 
-	}
-
-	/**
 	 * loads a user from the database.
 	 */
 	@SuppressWarnings("unchecked")
@@ -355,11 +328,11 @@ public class DatabaseSaver implements IPersistency{
 				array.add(result.getString("cpr"));
 				array.add(result.getString("password"));
 
-
-				roles.addAll((ArrayList<String>)anyDeserialize(result.getString("role")));
+				//TODO ("role" and) ";" should be a constant string
+				roles.addAll(Arrays.asList(result.getString("role").split(";")));
 			}
-		} catch(Exception e) {System.out.println(e);
-
+		} catch(Exception e) {
+			e.printStackTrace();
 		}
 		return arrayToUserDTO(array,roles);
 	}
