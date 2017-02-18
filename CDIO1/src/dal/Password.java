@@ -6,7 +6,6 @@ public class Password {
 		// TODO Auto-generated method stub
 
 		String pwd = makePassword(8);
-		System.out.println(pwd);
 		
 	}
 	
