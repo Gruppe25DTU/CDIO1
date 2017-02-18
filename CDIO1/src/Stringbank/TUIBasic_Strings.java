@@ -53,6 +53,8 @@ public class TUIBasic_Strings {
 			"The User ID has to be a number",
 
 			"Error trying to get user",
+
+			"Enter new password",
 	};
 
 
@@ -86,6 +88,7 @@ public class TUIBasic_Strings {
 	 * 21 = no user exists with id ERROR <br>
 	 * 22 = UserID has to be a number ERROR <br>
 	 * 23 = cant get user ERROR <br>
+	 * 24 = choose a password <br>
 	 */
 	public String getText(int i)
 	{

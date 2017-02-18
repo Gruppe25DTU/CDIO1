@@ -145,8 +145,8 @@ public class UserDAOBasic implements IUserDAO {
 		persistencyManager.updateUser(user, originalID);
 	}
 
-	public String getRequirement(Runnable method) {
-	    return "";
+	public String getRequirement(String method) {
+		return ruleList.get(method).toString();
     }
 
 
@@ -165,7 +165,7 @@ public class UserDAOBasic implements IUserDAO {
 				("Initials must be between " + minIni + " and " + maxIni + " characters"
 						, t -> t.length() >= minIni && t.length() <= maxIni);
 		Rule cprRule = new Rule<String>
-				(""
+				("CPR must be entered as 'xxxxxx-yyyy' or 'xxxxxxyyyy'"
 						, t -> Pattern.matches("[0-9]{6}-?[0-9]{4}", t));
 		Rule pwdRule = new Rule<String>
 				("Password must be at least " + minPwd + " long and contain at least "
@@ -176,15 +176,15 @@ public class UserDAOBasic implements IUserDAO {
 						"* Special characters (Use only\". - _ + ! ? =\")"
 						, t -> {
 					int hasSize = t.length() >= minPwd ? 1 : 0;
-					int hasLowerCase = t.matches(".*[a-å]+.*") ? 1 : 0;
-					int hasUpper = t.matches(".*[A-Å]+.*") ? 1 : 0;
+					int hasLowerCase = t.matches(".*[a-zæøå]+.*") ? 1 : 0;
+					int hasUpper = t.matches(".*[A-ZÆØÅ]+.*") ? 1 : 0;
 					int hasNumber = t.matches(".*[0-9]+.*") ? 1 : 0;
 					int hasSpecial = t.matches(".*[.-_+!?=]+.*") ? 1 : 0;
-					boolean hasIllegal = !t.matches("[a-åA-Å0-9.-_+!?=]*");
+					boolean hasIllegal = !t.matches("[a-zæøåA-ZÆØÅ0-9.-_+!?=]*");
 					if (hasIllegal) {
 						return false;
 					}
-					return (hasSize + hasLowerCase + hasUpper + hasNumber + hasSpecial >= minPwdReq);
+					return ((hasSize + hasLowerCase + hasUpper + hasNumber + hasSpecial) >= minPwdReq);
 				}
 				);
 		ruleList.put("id", idRule);

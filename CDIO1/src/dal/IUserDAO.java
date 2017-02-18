@@ -21,6 +21,7 @@ public interface IUserDAO {
     boolean setPwd(UserDTO user) throws DALException;
 	boolean deleteUser(int userId) throws DALException;
 	Set<Integer> getAvailableIDs() throws DALException;
+	String getRequirement(String method);
     Map<String, Rule> ruleList = new HashMap<> ();
     boolean setRoles(UserDTO user, List<String> roles);
     void updateUser(UserDTO selected, int selectedOriginalID);

@@ -115,20 +115,18 @@ public class TUIController {
 				finishUpdate();
 			}
 		}, "Save Changes", "Help for Save Changes goes here");
-		//TODO
-		/*
-		Command pwd = new Command(() -> new UpdateMethod() {
+		Command pwd = new Command(new UpdateMethod() {
 			@Override
-			public void method() throws Keyboard.DALKeyboardInterruptException {
+			public void method() throws Keyboard.DALKeyboardInterruptException, DALException {
 				choosePwd();
 			}
-		}, "Update Initials", "Help for Update Initials goes here");
-		*/
+		}, "Update Password", "Help for Update Password goes here");
 		updateMap.put("1", name);
 		updateMap.put("2", initials);
 		updateMap.put("3", cpr);
 		updateMap.put("4", roles);
-		updateMap.put("5", finish);
+		updateMap.put("5", pwd);
+		updateMap.put("6", finish);
 	}
 
 	public void menu()
@@ -317,6 +315,8 @@ public class TUIController {
 	private String chooseName(UserDTO user) throws Keyboard.DALKeyboardInterruptException, DALException {
 		String name = user.getUserName();
 		do {
+		    //TODO: FIX hardcoded string!
+		    ui.displayMessage(f.getRequirement("name"));
 			name = ui.getResponse(s.getText(9));
 		} while (!f.setName(user, name));
 		return name;
@@ -332,6 +332,8 @@ public class TUIController {
 	private String chooseInitials(UserDTO user) throws Keyboard.DALKeyboardInterruptException, DALException {
 		String ini = user.getIni();
 		do {
+            //TODO: FIX hardcoded string!
+            ui.displayMessage(f.getRequirement("init"));
 			ini = ui.getResponse(s.getText(10));
 		} while (!f.setInitials(user, ini));
 		return ini;
@@ -347,6 +349,8 @@ public class TUIController {
 	private String chooseCPR(UserDTO user) throws Keyboard.DALKeyboardInterruptException, DALException {
 		String cpr = user.getCpr();
 		do {
+            //TODO: FIX hardcoded string!
+            ui.displayMessage(f.getRequirement("cpr"));
 			cpr = ui.getResponse(s.getText(11));
 		} while (!f.setCpr(user, cpr));
 		return cpr;
@@ -410,6 +414,16 @@ public class TUIController {
 		}
 		return chosenRoles;
 	}
+
+    private void choosePwd() throws Keyboard.DALKeyboardInterruptException, DALException {
+        if (selected != null) {
+            String pwd;
+            do {
+                ui.displayMessage(f.getRequirement("pwd"));
+                pwd = ui.getResponse(s.getText(24));
+            } while (!f.setPwd(selected, pwd));
+        }
+    }
 
 	private void finishUpdate() throws DALException {
 		if (selected != null) {
