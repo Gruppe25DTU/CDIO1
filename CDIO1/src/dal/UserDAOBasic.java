@@ -67,7 +67,8 @@ public class UserDAOBasic implements IUserDAO {
 	@Override
 	public boolean setPwd(UserDTO user, String pwd) throws DALException {
 		// TODO Auto-generated method stub
-
+		pwd = Password.makePassword(8);
+		user.setPassword(pwd);
 		return false;
 	}
 

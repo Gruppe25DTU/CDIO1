@@ -4,9 +4,6 @@ public class Password {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-
-		String pwd = makePassword(8);
-		
 	}
 	
 	public static String makePassword(int length) {
