@@ -367,7 +367,7 @@ public class DatabaseSaver implements IPersistency{
 	/**
 	 * Sets the connection to null
 	 */
-	public void exit() {
+	public void quit() {
 		conn = null;
 	}
 
