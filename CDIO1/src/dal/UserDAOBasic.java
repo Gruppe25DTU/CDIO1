@@ -148,7 +148,7 @@ public class UserDAOBasic implements IUserDAO {
     private void createRuleSet() {
 		int minID = 11, maxID = 99;
 		int minName = 2, maxName = 20;
-		int minIni = 2, maxIni = 20;
+		int minIni = 2, maxIni = 3;
 		int minPwd = 6, minPwdReq = 3;
 		Rule idRule = new Rule<Integer>
 				("ID must be between" + minID + " and " + maxID

@@ -143,8 +143,9 @@ public class DatabaseSaver implements IPersistency{
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+            return false;
 		}
-        return false;
+        return true;
     }
 
 	@Override
