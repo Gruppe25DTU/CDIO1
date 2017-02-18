@@ -1,16 +1,18 @@
 package persistency;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import dto.UserDTO;
 
 public interface IPersistency {
 	
-	UserDTO load(int userID);	
+	void load();	
 	boolean save(UserDTO user);
 	void updateUser(UserDTO user, int i);
 	UserDTO getUser(int id);
-	List<UserDTO> getUserList();
-	List<Integer> getUsedIds();
+	ArrayList<UserDTO> getUserList();
+	ArrayList<String> getUserIDList();
+	void deleteUser(int userID);
 	
 }
