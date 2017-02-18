@@ -1,11 +1,9 @@
 package dal;
 
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 
 import dto.UserDTO;
 
@@ -23,10 +21,10 @@ public interface IUserDAO {
     boolean setPwd(UserDTO user) throws DALException;
 	boolean deleteUser(int userId) throws DALException;
 	Set<Integer> getAvailableIDs() throws DALException;
+    Map<String, Rule> ruleList = new HashMap<> ();
+    boolean setRoles(UserDTO user, List<String> roles);
 
-  HashMap<Runnable, Rule> ruleList = new HashMap<> ();
-  
-	class DALException extends Exception {
+    class DALException extends Exception {
 
 		/**
 		 * 
@@ -41,43 +39,25 @@ public interface IUserDAO {
 			super(msg);
 		}
 
-	}
-
-  class Rule {
-    String text;
-    Predicate<Integer> pred;
-
-    public Rule(String text, Predicate<Integer> pred) {
-      this.text = text;
-      this.pred = pred;
     }
-    
-    public boolean test(Integer t) {
+
+    class Rule<T> {
+        String text;
+        Predicate<T> pred;
+
+        public Rule(String text, Predicate<T> pred) {
+            this.text = text;
+            this.pred = pred;
+    }
+
+    public boolean test(T t) {
       return pred.test(t);
     }
-    
+
     @Override
     public String toString() {
       return text;
     }
-  }
-	
-	default void createRuleSet(IUserDAO userDAO) {
-        int minID = 11;
-        int maxID = 99;
-        Predicate<Integer> pred = new Predicate<Integer>() {
-          @Override
-          public boolean test(Integer t) {
-            return t > minID && t < maxID;
-          };
-        };
-        Rule rule = new Rule("ID must be between" + minID + " and " + maxID, pred);
-        try {
-            //TODO
-            //ruleList.put(userDAO::setID, rule);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-	}
+    }
 
 }
