@@ -18,32 +18,6 @@ public class TUIBasic implements IUserInterface {
 		
 	}
 
-	public void showMenu(List<String> menuCommands)
-	{
-		for(String singlCom : menuCommands)
-			System.out.println(singlCom);
-	}
-
-	public void listUsers()
-	{
-
-	}
-
-	public void createUser()
-	{
-		
-	}
-
-	public void updateUser()
-	{
-
-	}
-
-
-	public void deleteUser()
-	{
-	}
-
 	public void quit()
 	{
 		keyb.close();
@@ -78,12 +52,6 @@ public class TUIBasic implements IUserInterface {
 		if(input.length() == 1 && input.equalsIgnoreCase("y"))
 			return true;
 		return false;
-	}
-
-	@Override
-	public void menu() {
-		// TODO Auto-generated method stub
-		
 	}
 	
 	

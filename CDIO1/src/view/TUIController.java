@@ -3,6 +3,7 @@ package view;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import Stringbank.TUIBasic_Strings;
@@ -12,111 +13,116 @@ import dto.UserDTO;
 
 public class TUIController {
 
-  private class Command implements Runnable {
-    
-    Runnable method;
-    String sdesc, help;
-    
-    public Command(Runnable method, String sdesc, String help) {
-      this.method = method;
-      this.sdesc = sdesc;
-      this.help = help;
+	protected class Command implements Runnable {
 
-    }
-    
-    @Override
-    public String toString() {
-      return sdesc;
-    }
-    
-    public String getHelp() {
-      return help;
-    }
-    
+		Runnable method;
+		String sdesc, trigger, help;
 
-    
-    @Override
-    public void run() {
-      method.run();
-    }
-    
-  }
-  
+		public Command(Runnable method, String sdesc, String help, String trigger) {
+			this.method = method;
+			this.sdesc = sdesc;
+			this.help = help;
+			this.trigger = trigger;
+
+		}
+
+		@Override
+		public String toString() {
+			return sdesc;
+		}
+
+		public String getHelp() {
+			return help;
+		}
+
+
+
+		@Override
+		public void run() {
+			method.run();
+		}
+
+	}
+
 	private IUserInterface ui;
 	private IUserDAO f;
 	private TUIBasic_Strings s;
-	private HashMap<String, Command> commandMap;
-	private boolean running;
-	
+	private boolean stayInMenu;
+	private UserDTO userSelected; //The current user being worked upon
+
+
 	public TUIController(IUserInterface ui, IUserDAO f) 
 	{
 		this.f = f;
 		this.ui = ui;
 		s = new TUIBasic_Strings();
-		running = true;
+		stayInMenu = true;
 	}
-	
-	public void initCommandList() {
-	commandMap = new HashMap<String, Command>();
-    Command create = new Command(this::createUser, "Create a new User", "Help for Create User goes here!");
-    Command list = new Command(this::listUsers, "List all existing Users", "Help for List goes here!");
-    Command update = new Command(this::updateUser, "Update an existing User", "Help for Update User goes here!");
-    Command delete = new Command(this::createUser, "Delete an existing User", "Help for Delete User goes here!");
-    Command quit = new Command(this::quit, "Quit the program", "Help for Quit goes here!");
-    
-    commandMap.put("1", create);
-    commandMap.put("2", list);
-    commandMap.put("3", update);
-    commandMap.put("4", delete);
-    commandMap.put("5", quit);
-    
-	}
+
 
 	public void menu()
 	{
-		initCommandList();
-		List<String> menu = new ArrayList<String>();
-		for(String key : commandMap.keySet()) {
-			  menu.add("["+key+"]" + " : " + commandMap.get(key));
-			}
-		
-		ui.displayMessage(s.getText(1));
-		ui.showMenu(menu);
-		while(running)
+		Menu mainMenu = new Menu(s.getText(1));
+		mainMenu.addCommand(new Command(this::createUser, "Create a new User", "Help for Create User goes here!", "1"));
+		mainMenu.addCommand(new Command(this::listUsers, "List all existing Users", "Help for List goes here!","2"));
+		mainMenu.addCommand(new Command(this::updateUser, "Update an existing User", "Help for Update User goes here!", "3"));
+		mainMenu.addCommand(new Command(this::deleteUser, "Delete an existing User", "Help for Delete User goes here!", "4"));
+		mainMenu.addCommand(new Command(this::quit, "Quit the program", "Help for Quit goes here!", "5"));
+		while(stayInMenu)
 		{
-			String input = ui.getResponse("");
-			Command cmd;
-			if ((cmd = commandMap.get(input)) != null) {
-			  cmd.run();
+			String input = ui.getResponse(mainMenu.toString());
+			if (mainMenu.get(input) != null) {
+				mainMenu.get(input).run();;
 			}
-			
+			else
+			{
+				ui.displayMessage("ERROR: Unknown command");
+			}
+
 		}
 	}
 
 	public void createUser()
 	{
-		UserDTO newUser = new UserDTO();
+		userSelected = new UserDTO();
+		Menu createM = new Menu("User selected: "+userSelected.toString());
+		createM.addCommand(new Command(this::chooseName,"Enter the user's name", "Help", "1"));
+		createM.addCommand(new Command(this::chooseInitials, "Enter the user's initials","Help" ,"2"));
+		createM.addCommand(new Command (this::chooseCPR, "Enter the user's CPR number", "Help", "3"));
+		createM.addCommand(new Command(this::chooseRoles, "Choose the roles for the user","Help","4"));
+		createM.addCommand(new Command(this::generatePassword, "Generate a new password", "Help","5"));
+		createM.addCommand(new Command(this::resetUser, "Start over", "Help", "6"));
+		createM.addCommand(new Command(this::finishCreate, "Save user", "Help", "7"));
+		createM.addCommand(new Command(this::goBack, "Exit user creation", "Help", "8"));
 		int userId = generateUserId();
-		String name = chooseName();
-		String ini = chooseInitials();
-		String cpr = chooseCPR();
-		List<String> roles = chooseRoles();
-		String psswrd = generatePassword();	
-		newUser.setCpr(cpr);
-		newUser.setIni(ini);
-		newUser.setPassword(psswrd);
-		newUser.setRoles((ArrayList<String>)roles);
-		newUser.setUserID(userId);
-		newUser.setUserName(name);
+		userSelected.setUserId(userId);
+		while(stayInMenu)
+		{
+			createM.setMsg("User selected: "+userSelected.toString());
+			String input = ui.getResponse(createM.toString());
+			if(createM.get(input) != null)
+				createM.get(input).run();
+
+		}
+		stayInMenu = true;
+
+	}
+	public void finishCreate()
+	{
 		try 
 		{
 			if(ui.confirmInput())
-				f.createUser(newUser);
+				f.createUser(userSelected);
 		} 
 		catch (DALException e) {
 			System.out.println(e.getMessage());
-		}
+		}	
+	}
 
+	public void resetUser()
+	{
+		userSelected = new UserDTO();
+		userSelected.setUserID(generateUserId());
 	}
 
 	public void listUsers()
@@ -138,114 +144,130 @@ public class TUIController {
 
 	public void updateUser()
 	{
-		ui.displayMessage(s.getText(4));
-		UserDTO user;
-		while(true)
+		userSelected = null;
+		Menu updateM = new Menu("");
+		updateM.addCommand(new Command(this::getUser, "Select a user to update", "Help", "1"));
+		updateM.addCommand(new Command(this::listUsers, "List all users", "Help", "2"));
+		updateM.addCommand(new Command(this::chooseWhatToUpdate, "Choose what to update", "Help", "3"));
+		updateM.addCommand(new Command(this::goBack, "Exit user update", "Help", "4"));
+		while(stayInMenu)
 		{
+			String user = userSelected!=null?userSelected.toString(): "--NO USER--";
+			updateM.setMsg("User Selected: "+ user);
+			String input = ui.getResponse(updateM.toString());
+			if(updateM.get(input)!=null)
+				updateM.get(input).run();
 
-			int userId = ui.getInt("");
-			String input = ui.getLastInput();
-			if(input.equals("help"))
-				listUsers();
-			else if(userId == -1)
-			{
-
-			}
-			else
-			{
-				try
-				{
-					user = f.getUser(userId);
-					if(user != null)
-					{
-						chooseWhatToUpdate(user);
-						//f.updateUser(user);
-						break;
-
-					}
-					else
-						ui.displayMessage(s.getText(21));
-				}
-				catch(DALException e)
-				{
-					ui.displayMessage(e.getMessage());
-				}
-			}
+		}
+		stayInMenu = true;
 
 
+	}
+
+
+	public void getUser()
+	{
+		
+		try
+		{
+			int input = ui.getInt("Enter the User ID");
+			userSelected = f.getUser(input);
+			if(userSelected == null)
+				ui.displayMessage(s.getText(21));
+		}
+		catch(DALException e)
+		{
+			ui.displayMessage(e.getMessage());
 		}
 	}
 
-	private void chooseWhatToUpdate(UserDTO user)
+	public void finishUpdate()
 	{
-		boolean changing = true;
-		while(changing)
+		try
 		{
-			ui.displayMessage(s.getText(5), user.getUserName());
-			String input = ui.getResponse(s.getText(6));
-
-			switch(input)
-			{
-			case "1": user.setUserName(chooseName());
-			break;
-			case "2": user.setIni(chooseInitials());
-			break;
-			case "3": user.setRoles((ArrayList<String>)chooseRoles());
-			break;
-			case "4": changing = false;
-			break;
-			default : ui.displayMessage(s.getText(20));
-			break;
-			}
-
+			f.setCpr(userSelected, userSelected.getCpr());
+			f.setID(userSelected, userSelected.getUserID());
+			f.setInitials(userSelected, userSelected.getIni());
+			f.setName(userSelected, userSelected.getUserName());
+			f.setPwd(userSelected, userSelected.getPassword());
 		}
+		catch(DALException e)
+		{
+			ui.displayMessage(e.getMessage());
+		}
+	}
+
+	private void chooseWhatToUpdate()
+	{
+		if(userSelected == null)
+			ui.displayMessage("ERROR: No user selected");
+		else
+		{
+			Menu chooseM = new Menu("");
+			chooseM.addCommand(new Command(this::chooseName, "Update the name", "Help", "1"));
+			chooseM.addCommand(new Command(this::chooseInitials, "Update the initials","Help", "2"));
+			chooseM.addCommand(new Command(this::chooseCPR, "Update the CPR number", "Help", "3"));
+			chooseM.addCommand(new Command(this::chooseRoles, "Update the user's roles", "Help", "4"));
+			chooseM.addCommand(new Command(this::finishUpdate, "Save the updates", "Help", "5"));
+			chooseM.addCommand(new Command(this::goBack, "Exit update menu","Help","6"));
+			while(stayInMenu)
+			{
+				chooseM.setMsg("User selected: "+userSelected.toString());
+
+				String input = ui.getResponse(chooseM.toString());
+				if(chooseM.get(input)!=null)
+					chooseM.get(input).run();
+
+			}
+			stayInMenu = true;
+		}
+
 	}
 
 	public void deleteUser()
 	{
-		ui.displayMessage(s.getText(7));
-		while(true)
+		userSelected = null;
+		Menu deleteM = new Menu("");
+		deleteM.addCommand(new Command(this::getUser, "Which user do you wish to delete?", "Help", "1"));
+		deleteM.addCommand(new Command(this::listUsers, "List all the users", "Help", "2"));
+		deleteM.addCommand(new Command(this::finishDelete, "Delete the user","Help", "3"));
+		deleteM.addCommand(new Command(this::goBack, "Exit delete menu", "Help", "4"));
+		while(stayInMenu)
 		{
-			int userId = ui.getInt("");
-			String input = ui.getLastInput();
-			if(input.equals("help"))
+			String user = userSelected!=null?userSelected.toString():"--NO USER--";
+			deleteM.setMsg("User Selected: "+user);
+			String input = ui.getResponse(deleteM.toString());
+			if(deleteM.get(input)!=null)
+				deleteM.get(input).run();
+
+		}
+		stayInMenu = true;
+	}
+	
+	public void finishDelete()
+	{
+		try
+		{
+			if(ui.confirmInput())
 			{
-				listUsers();
+				f.deleteUser(userSelected.getUserID());
+				userSelected = null;
 			}
-			else
-			{
-				if(userId!=-1)
-				{
-					try {
-						if(ui.confirmInput())
-						{
-							ui.displayMessage(s.getText(8), userId);
-							f.deleteUser(userId);
-							break;
-						}
-						else
-							break;
-
-					} catch (DALException e) {
-						System.out.println(e.getMessage());
-					}
-				}
-				else
-					ui.displayMessage(s.getText(20));
-
-
-			}
-
+				
+		}
+		catch(DALException e)
+		{
+			ui.displayMessage(e.getMessage());
 		}
 	}
 
 	private void quit()
 	{
-		running = false;
+		stayInMenu = false;
 		ui.quit();
 	}
 
-	private String chooseName()
+	private void chooseName()
 	{
 		while(true)
 		{
@@ -255,12 +277,16 @@ public class TUIController {
 			else if(input.length()>20)
 				ui.displayMessage("Name too long");
 			else
-				return input;
+			{
+				userSelected.setUserName(input);
+				break;
+			}
+
 		}
 
 	}
 
-	private String chooseInitials()
+	private void chooseInitials()
 	{
 		while(true)
 		{
@@ -273,7 +299,11 @@ public class TUIController {
 			else if(input.length()>4)
 				ui.displayMessage("Too many Initials");
 			else
-				return input;
+			{
+				userSelected.setIni(input);
+				break;
+			}
+
 		}
 	}
 
@@ -287,13 +317,16 @@ public class TUIController {
 		return false;
 	}
 
-	private String chooseCPR()
+	private void chooseCPR()
 	{
 		while(true)
 		{
 			String input = ui.getResponse(s.getText(11));
 			if(correctCPRFormat(input))
-				return input;
+			{
+				userSelected.setCpr(input);
+				break;
+			}		
 			else
 				ui.displayMessage("Incorrect CPR format");
 		}
@@ -321,7 +354,7 @@ public class TUIController {
 		return true;
 	}
 
-	private List<String> chooseRoles()
+	private void chooseRoles()
 	{
 		List<String> roles = new ArrayList<String>();
 		List<String> chosenRoles = new ArrayList<String>();
@@ -346,17 +379,21 @@ public class TUIController {
 			}
 			else if(input.equals("1") || input.equals("2") || input.equals("3") || input.equals("4"))
 			{
-				chosenRoles.add(roles.get(Integer.parseInt(input)-1));
-				//Removes the roles from the options list
-				if(roles.get(Integer.parseInt(input)-1).equals(s.getText(13)) || 
-						roles.get(Integer.parseInt(input)-1).equals(s.getText(14)))
+				if(Integer.parseInt(input)-1<roles.size())
 				{
-					//Makes sure that these two roles are mutually exclusive
-					roles.remove(s.getText(13));
-					roles.remove(s.getText(14));
+					chosenRoles.add(roles.get(Integer.parseInt(input)-1));
+					//Removes the roles from the options list
+					if(roles.get(Integer.parseInt(input)-1).equals(s.getText(13)) || 
+							roles.get(Integer.parseInt(input)-1).equals(s.getText(14)))
+					{
+						//Makes sure that these two roles are mutually exclusive
+						roles.remove(s.getText(13));
+						roles.remove(s.getText(14));
+					}
+					else
+						roles.remove(Integer.parseInt(input)-1);
 				}
-				else
-					roles.remove(Integer.parseInt(input)-1);
+				
 			}
 			else
 				System.out.println(s.getText(20));
@@ -369,10 +406,10 @@ public class TUIController {
 			chosenRolesMsg += "\n";
 			ui.displayMessage(chosenRolesMsg);
 		}
-		return chosenRoles;
+		userSelected.setRoles((ArrayList<String>)chosenRoles);
 	}
 
-	private String generatePassword()
+	private void generatePassword()
 	{
 		Random gen = new Random();
 		String password = "";
@@ -399,7 +436,7 @@ public class TUIController {
 			else
 				i--;
 		}
-		return password;
+		userSelected.setPassword(password);
 	}
 
 	private int generateUserId()
@@ -412,7 +449,7 @@ public class TUIController {
 					boolean idInUse = false;
 					for(int k = 0 ; k<users.size();k++)
 					{
-						if(i == users.get(i).getUserID())
+						if(i == users.get(i-11).getUserID())
 							idInUse = true;
 					}
 					if(!idInUse)
@@ -426,6 +463,13 @@ public class TUIController {
 	public void run()
 	{
 		this.menu();
+	}
+
+
+
+	public void goBack()
+	{
+		stayInMenu = false;
 	}
 
 }

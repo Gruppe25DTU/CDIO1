@@ -26,7 +26,7 @@ public class Keyboard {
 			}
 			catch(NumberFormatException e)
 			{
-			  e.printStackTrace();
+			  
 			}
 		return result;
 	}
