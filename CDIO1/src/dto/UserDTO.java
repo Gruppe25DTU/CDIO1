@@ -2,17 +2,19 @@ package dto;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class UserDTO implements Serializable{
 
 	private static final long serialVersionUID = 4545864587995944260L;
-	private int	userID;                     
-	private String userName;                
-	private String ini;                 
-	private String cpr;
-	private String password;
-	private ArrayList<String> roles;
+	private int	userID = -1;
+	private String userName = "";
+	private String ini = "";
+	private String cpr = "";
+	private String password = "";
+	private Set<String> roles = new HashSet<>();
 
 	//TODO Add relevant fields
 	
@@ -23,7 +25,7 @@ public class UserDTO implements Serializable{
 		this.ini = ini;
 		this.cpr = cpr;
 		this.password = password;
-		this.roles = new ArrayList<>(roles);
+		this.roles = new HashSet<>(roles);
 	}
 	
 	public UserDTO()
@@ -39,7 +41,7 @@ public class UserDTO implements Serializable{
 		this.cpr = user.cpr;
 		this.password = user.password;
 		if (user.roles != null) {
-			this.roles = new ArrayList<>(user.roles);
+			this.roles = new HashSet<>(user.roles);
 		}
 	}
 
@@ -62,10 +64,10 @@ public class UserDTO implements Serializable{
 		this.ini = ini;
 	}
 
-	public List<String> getRoles() {
+	public Set<String> getRoles() {
 		return roles;
 	}
-	public void setRoles(ArrayList<String> roles) {
+	public void setRoles(Set<String> roles) {
 		this.roles = roles;
 	}
 	

@@ -3,7 +3,6 @@ package dal;
 
 import java.util.*;
 import java.util.function.Predicate;
-import java.util.regex.Pattern;
 
 import dto.UserDTO;
 
@@ -23,8 +22,15 @@ public interface IUserDAO {
 	Set<Integer> getAvailableIDs() throws DALException;
 	String getRequirement(String method);
     Map<String, Rule> ruleList = new HashMap<> ();
-    boolean setRoles(UserDTO user, List<String> roles);
+    boolean addRole(UserDTO user, String role);
+    HashSet<String> getAvailableRoles(UserDTO user);
     void updateUser(UserDTO selected, int selectedOriginalID);
+    ArrayList<String> roles = new ArrayList<String>() {{
+       add("Admin");
+       add("Pharmacist");
+       add("Foreman");
+       add("Operator");
+    }};
 
     class DALException extends Exception {
 
@@ -61,5 +67,4 @@ public interface IUserDAO {
       return text;
     }
     }
-
 }

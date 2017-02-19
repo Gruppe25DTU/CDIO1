@@ -1,8 +1,6 @@
 package view;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 import Stringbank.TUIBasic_Strings;
 import dal.IUserDAO;
@@ -71,56 +69,26 @@ public class TUIController {
 	}
 	
 	public void initCommandList() {
-		commandMap = new HashMap<>();
 		Command create = new Command(this::createUser, "Create a new User", "Help for Create User goes here!");
 		Command list = new Command(this::listUsers, "List all existing Users", "Help for List goes here!");
 		Command update = new Command(this::updateUser, "Update an existing User", "Help for Update User goes here!");
 		Command delete = new Command(this::deleteUser, "Delete an existing User", "Help for Delete User goes here!");
 		Command quit = new Command(this::quit, "Quit the program", "Help for Quit goes here!");
-
+		commandMap = new HashMap<>();
 		commandMap.put("1", create);
 		commandMap.put("2", list);
 		commandMap.put("3", update);
 		commandMap.put("4", delete);
 		commandMap.put("5", quit);
 
+
+		Command name = new Command((UpdateMethod) this::chooseName, "Update Name", "Help for Update Name goes here");
+		Command initials = new Command((UpdateMethod) this::chooseInitials, "Update Initials", "Help for Update Initials goes here");
+		Command cpr = new Command((UpdateMethod) this::chooseCPR, "Update CPR", "Help for Update CPR goes here");
+		Command roles = new Command((UpdateMethod) this::chooseRoles, "Update Roles", "Help for Update Roles goes here");
+		Command finish = new Command((UpdateMethod) this::finishUpdate, "Save Changes", "Help for Save Changes goes here");
+		Command pwd = new Command((UpdateMethod) this::choosePwd, "Update Password", "Help for Update Password goes here");
 		updateMap = new HashMap<>();
-		Command name = new Command(new UpdateMethod() {
-			@Override
-			public void method() throws Keyboard.DALKeyboardInterruptException, DALException {
-				chooseName();
-			}
-		} , "Update Name", "Help for Update Name goes here");
-		Command initials = new Command(new UpdateMethod() {
-			@Override
-			public void method() throws Keyboard.DALKeyboardInterruptException, DALException {
-				chooseInitials();
-			}
-		}, "Update Initials", "Help for Update Initials goes here");
-		Command cpr = new Command(new UpdateMethod() {
-			@Override
-			public void method() throws Keyboard.DALKeyboardInterruptException, DALException {
-				chooseCPR();
-			}
-		}, "Update CPR", "Help for Update CPR goes here");
-		Command roles = new Command(new UpdateMethod() {
-			@Override
-			public void method() throws Keyboard.DALKeyboardInterruptException {
-				chooseRoles();
-			}
-		}, "Update Roles", "Help for Update Roles goes here");
-		Command finish = new Command(new UpdateMethod() {
-			@Override
-			public void method() throws Keyboard.DALKeyboardInterruptException, DALException {
-				finishUpdate();
-			}
-		}, "Save Changes", "Help for Save Changes goes here");
-		Command pwd = new Command(new UpdateMethod() {
-			@Override
-			public void method() throws Keyboard.DALKeyboardInterruptException, DALException {
-				choosePwd();
-			}
-		}, "Update Password", "Help for Update Password goes here");
 		updateMap.put("1", name);
 		updateMap.put("2", initials);
 		updateMap.put("3", cpr);
@@ -165,8 +133,7 @@ public class TUIController {
 			chooseName(newUser);
 			chooseInitials(newUser);
 			chooseCPR(newUser);
-			List<String> roles = chooseRoles();
-			f.setRoles(newUser, roles);
+			chooseRoles(newUser);
 			try
 			{
 				ui.displayMessage("User to be saved:\n" + newUser);
@@ -363,57 +330,63 @@ public class TUIController {
 		throw new DALException("No user selected!");
 	}
 
-	//TODO
-	private List<String> chooseRoles() throws Keyboard.DALKeyboardInterruptException
+	private Set<String> chooseRoles(UserDTO user) throws Keyboard.DALKeyboardInterruptException
 	{
-		List<String> roles = new ArrayList<String>();
-		List<String> chosenRoles = new ArrayList<String>();
-		roles.add(s.getText(12));
-		roles.add(s.getText(13));
-		roles.add(s.getText(14));
-		roles.add(s.getText(15));
+		Set<String> chosenRoles = user.getRoles();
+		HashSet<String> roles = f.getAvailableRoles(user);
 		ui.displayMessage(s.getText(16));
 		while(roles.size()>0)
 		{
-			//Prints a list of all the available roles
-			String msg = s.getText(17);
-			for(int i = 0; i<roles.size();i++)
-			{
-				msg += "\n"+String.format(s.getText(18), i+1, roles.get(i));
-			}
-			msg += "\n"+String.format(s.getText(18), roles.size()+1, "Done choosing");
-			String input = ui.getResponse(msg);
-			if(input.equals(""+(roles.size()+1)))
-			{
-				roles.clear();
-			}
-			else if(input.equals("1") || input.equals("2") || input.equals("3") || input.equals("4"))
-			{
-				chosenRoles.add(roles.get(Integer.parseInt(input)-1));
-				//Removes the roles from the options list
-				if(roles.get(Integer.parseInt(input)-1).equals(s.getText(13)) || 
-						roles.get(Integer.parseInt(input)-1).equals(s.getText(14)))
-				{
-					//Makes sure that these two roles are mutually exclusive
-					roles.remove(s.getText(13));
-					roles.remove(s.getText(14));
-				}
-				else
-					roles.remove(Integer.parseInt(input)-1);
-			}
-			else
-				ui.displayMessage(s.getText(20));
-
+			chosenRoles = user.getRoles();
+			//Print a list of all chosen roles
 			String chosenRolesMsg = s.getText(19);
-			for(int i = 0; i<chosenRoles.size();i++)
+			for(int i = 0; i < chosenRoles.size(); i++)
 			{
-				chosenRolesMsg += chosenRoles.get(i)+".. ";
+				chosenRolesMsg += "\n\t" + chosenRoles.toArray()[i];
 			}
 			chosenRolesMsg += "\n";
 			ui.displayMessage(chosenRolesMsg);
+
+			//Prints a list of all the available roles
+			String msg = s.getText(17);
+			for(int i = 0; i < roles.size(); i++)
+			{
+				msg += "\n"+String.format(s.getText(18), i+1, roles.toArray()[i]);
+			}
+			msg += "\n"+String.format(s.getText(18), roles.size()+1, "Done choosing");
+			msg += "\n"+String.format(s.getText(18), roles.size()+2, "Clear user's roles");
+
+			ui.displayMessage(msg);
+
+			int input = ui.getInt("") - 1;
+			if (input < 0) {
+				continue;
+			}
+			if (input < roles.size()) {
+				f.addRole(user, (String) roles.toArray()[input]);
+				roles = f.getAvailableRoles(user);
+			}
+			else if (input == roles.size())
+			{
+				roles.clear();
+			}
+			else if (input == roles.size() + 1) {
+				user.setRoles(new HashSet<>());
+				roles = f.getAvailableRoles(user);
+			}
+			else {
+				ui.displayMessage(s.getText(20));
+			}
 		}
 		return chosenRoles;
 	}
+
+    private Set<String> chooseRoles() throws Keyboard.DALKeyboardInterruptException {
+        if (selected != null) {
+            return chooseRoles(selected);
+        }
+        return null;
+    }
 
     private void choosePwd() throws Keyboard.DALKeyboardInterruptException, DALException {
         if (selected != null) {

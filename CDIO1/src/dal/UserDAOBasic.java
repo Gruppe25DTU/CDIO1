@@ -134,11 +134,30 @@ public class UserDAOBasic implements IUserDAO {
 	}
 
 	@Override
-	public boolean setRoles(UserDTO user, List<String> roles) {
-		//TODO: Validate! Add one role at a time?
-		user.setRoles((ArrayList<String>)roles);
-		return true;
+	public boolean addRole(UserDTO user, String role) {
+	    Set<String> tmp = new HashSet<>(user.getRoles());
+	    tmp.add(role);
+	    if (ruleList.get("role").test(tmp)) {
+	        user.setRoles(tmp);
+	        return true;
+        }
+		return false;
 	}
+
+	@Override
+    public HashSet<String> getAvailableRoles(UserDTO user) {
+        HashSet<String> available = new HashSet<>();
+        Set<String> used = new HashSet<>(user.getRoles());
+        for (String role : roles) {
+            if (used.add(role)) {
+                if (ruleList.get("role").test(used)) {
+                    available.add(role);
+                }
+                used.remove(role);
+            }
+        }
+        return available;
+    }
 
 	@Override
 	public void updateUser(UserDTO user, int originalID) {
@@ -155,6 +174,9 @@ public class UserDAOBasic implements IUserDAO {
 		int minName = 2, maxName = 20;
 		int minIni = 2, maxIni = 3;
 		int minPwd = 6, minPwdReq = 3;
+		String[][] exclusiveRoles = new String[][] {{
+		   "Pharmacist", "Foreman",
+        }};
 		Rule idRule = new Rule<Integer>
 				("ID must be between" + minID + " and " + maxID
 						, t -> t > minID && t < maxID);
@@ -187,11 +209,35 @@ public class UserDAOBasic implements IUserDAO {
 					return ((hasSize + hasLowerCase + hasUpper + hasNumber + hasSpecial) >= minPwdReq);
 				}
 				);
+		String roleRuleString = "Following roles cannot be assigned at the same time:";
+		for (int i = 0; i < exclusiveRoles.length; i++) {
+		    roleRuleString += "Exclusive Group " + i + "\n";
+		    for (int j = 0; j < exclusiveRoles[i].length; j++) {
+		        roleRuleString += "\t\"" + exclusiveRoles[i][j] + "\"\n";
+            }
+        }
+		Rule roleRule = new Rule<Set<String>>(
+                roleRuleString
+                , t -> {
+		            for (int i = 0; i < exclusiveRoles.length; i++) {
+		                int count = 0;
+		                for (int j = 0; j < exclusiveRoles[i].length; j++) {
+		                    if (t.contains(exclusiveRoles[i][j])) {
+		                        count++;
+                            }
+                        }
+                        if (count > 1) {
+		                    return false;
+                        }
+                    }
+                    return true;
+        });
 		ruleList.put("id", idRule);
 		ruleList.put("name", nameRule);
 		ruleList.put("init", iniRule);
 		ruleList.put("cpr", cprRule);
 		ruleList.put("pwd", pwdRule);
+		ruleList.put("role", roleRule);
 	}
 
 
