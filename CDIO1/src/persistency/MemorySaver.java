@@ -11,8 +11,12 @@ public class MemorySaver implements IPersistency {
 
     private Map<Integer, UserDTO> userList;
 
+    public MemorySaver() {
+        init();
+    }
+
     @Override
-    public void load() {
+    public void init() {
         userList = new HashMap<>();
     }
 

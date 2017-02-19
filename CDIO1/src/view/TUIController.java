@@ -115,7 +115,7 @@ public class TUIController {
 			} catch (Keyboard.DALKeyboardInterruptException e) {
 				e.printStackTrace();
 				//TODO: Fix quit order / system!
-				ui.quit();
+				quit();
 			}
 			Command cmd;
 			if ((cmd = commandMap.get(input)) != null) {
@@ -276,6 +276,7 @@ public class TUIController {
 	private void quit()
 	{
 		running = false;
+		f.quit();
 		ui.quit();
 	}
 

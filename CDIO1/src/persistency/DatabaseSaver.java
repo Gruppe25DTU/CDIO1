@@ -22,13 +22,19 @@ public class DatabaseSaver implements IPersistency{
 
 
 	public DatabaseSaver() {
-		load();
+		init();
+		try {
+			createTable();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	/**
 	 * Initialize the connection
 	 */
-	private static void init() {
+	public void init() {
 		try {
 			conn = getConnection();
 		} catch (Exception e) {
@@ -264,22 +270,6 @@ public class DatabaseSaver implements IPersistency{
 			PreparedStatement update = conn.prepareStatement(statement);
 			update.executeUpdate();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-	}
-
-
-	/**
-	 * initialize the connection
-	 */
-	@Override
-	public void load() {
-		init();
-		try {
-			createTable();
-		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

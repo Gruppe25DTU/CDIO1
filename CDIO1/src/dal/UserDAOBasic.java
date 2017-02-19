@@ -20,6 +20,11 @@ public class UserDAOBasic implements IUserDAO {
 	}
 
 	@Override
+	public void quit() {
+		persistencyManager.quit();
+	}
+
+	@Override
 	public UserDTO getUser(int userId) throws DALException {
 		UserDTO user = persistencyManager.getUser(userId);
 		if (user == null) {
