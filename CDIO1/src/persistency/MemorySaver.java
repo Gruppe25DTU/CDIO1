@@ -2,11 +2,11 @@ package persistency;
 
 import dto.UserDTO;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
-/**
- * Created by ymuslu on 19-02-2017.
- */
 public class MemorySaver implements IPersistency {
 
     private Map<Integer, UserDTO> userList;

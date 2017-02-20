@@ -1,7 +1,6 @@
 package dto;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -15,10 +14,8 @@ public class UserDTO implements Serializable{
 	private String cpr = "";
 	private String password = "";
 	private Set<String> roles = new HashSet<>();
-
-	//TODO Add relevant fields
 	
-	public UserDTO(int userID, String userName, String ini, String cpr, String password, ArrayList<String> roles) 
+	public UserDTO(int userID, String userName, String ini, String cpr, String password, List<String> roles)
 	{	
 		this.userID = userID;
 		this.userName = userName;

@@ -1,21 +1,9 @@
 package persistency;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.*;
-
-import javax.xml.bind.DatatypeConverter;
-import javax.xml.crypto.Data;
-
 import dto.UserDTO;
+
+import java.sql.*;
+import java.util.*;
 
 public class DatabaseSaver implements IPersistency{
 	private static Connection conn;
@@ -59,7 +47,7 @@ public class DatabaseSaver implements IPersistency{
 		for (String role : user.getRoles()) {
 			roles += ";" + role;
 		}
-		if (roles != "") {
+		if (!roles.equals("")) {
 			roles = roles.substring(1);
 		}
 
@@ -110,7 +98,7 @@ public class DatabaseSaver implements IPersistency{
 
 		}
 		catch (Exception e) {
-			System.out.println(e);
+			e.printStackTrace();
 		}
 		finally {System.out.println("Function complete"); }
 	}
@@ -155,9 +143,8 @@ public class DatabaseSaver implements IPersistency{
     }
 
 	@Override
-	@SuppressWarnings("unchecked")
 	public ArrayList<UserDTO> getUserList() {
-		ArrayList<UserDTO> list = new ArrayList<UserDTO>();
+		ArrayList<UserDTO> list = new ArrayList<>();
 
 
 		try {
@@ -173,8 +160,8 @@ public class DatabaseSaver implements IPersistency{
 
 					//Show data from the result set.
 					while (result.next()) {
-						ArrayList<String> information = new ArrayList<String>();
-						ArrayList<String> roles = new ArrayList<String>();
+						ArrayList<String> information = new ArrayList<>();
+						ArrayList<String> roles = new ArrayList<>();
 
 						information.add(result.getString("userID"));
 						information.add(result.getString("userName"));
@@ -259,7 +246,7 @@ public class DatabaseSaver implements IPersistency{
 		for (String role : user.getRoles()) {
 			roles += ";" + role;
 		}
-		if (roles != "") {
+		if (roles.equals("")) {
 			roles = roles.substring(1);
 		}
 
@@ -282,7 +269,7 @@ public class DatabaseSaver implements IPersistency{
 	 * @param roles
 	 * @return UserDTO
 	 */
-	private static UserDTO arrayToUserDTO(ArrayList<String> information, ArrayList<String> roles) {
+	private static UserDTO arrayToUserDTO(List<String> information, List<String> roles) {
 		int userID = Integer.parseInt(information.get(0));
 		String userName = information.get(1);
 		String ini = information.get(2);
@@ -290,8 +277,7 @@ public class DatabaseSaver implements IPersistency{
 		String password = information.get(4);
 
 
-		UserDTO user = new UserDTO(userID,userName,ini,cpr,password,roles);
-		return user;
+		return new UserDTO(userID,userName,ini,cpr,password,roles);
 	}
 
 	/**
@@ -302,8 +288,8 @@ public class DatabaseSaver implements IPersistency{
 	public UserDTO getUser(int userID) {
 		String statement = "Select * FROM users WHERE UserID = '%d'";
 		statement = String.format(statement, userID);
-		ArrayList<String> array = new ArrayList<String>();
-		ArrayList<String> roles = new ArrayList<String>();
+		List<String> array = new ArrayList<>();
+		List<String> roles = new ArrayList<>();
 		try {
 			PreparedStatement preparedStatement = conn.prepareStatement(statement);
 

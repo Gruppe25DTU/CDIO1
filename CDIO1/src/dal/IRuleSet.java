@@ -2,9 +2,6 @@ package dal;
 
 import java.util.function.Predicate;
 
-/**
- * Created by ymuslu on 20-02-2017.
- */
 public interface IRuleSet {
 
     Rule getIdReq();

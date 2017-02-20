@@ -1,10 +1,6 @@
 package dal;
 
 public class Password {
-
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-	}
 	
 	public static String makePassword(int length) {
 		String password = "";

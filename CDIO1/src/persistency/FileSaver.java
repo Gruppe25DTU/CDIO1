@@ -8,8 +8,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import dal.IUserDAO.DALException;
-
 public class FileSaver implements IPersistency {
 
     private static final String FILE_NAME = System.getProperty("user.dir") + "\\dtopersist.txt";

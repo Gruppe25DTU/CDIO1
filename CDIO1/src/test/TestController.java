@@ -2,7 +2,6 @@ package test;
 
 import dal.IUserDAO;
 import dal.UserDAOBasic;
-import persistency.DatabaseSaver;
 import persistency.FileSaver;
 import persistency.IPersistency;
 import view.IUserInterface;

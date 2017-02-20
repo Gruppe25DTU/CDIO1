@@ -1,13 +1,8 @@
 package view;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import dal.IUserDAO;
-import dal.IUserDAO.DALException;
-import dto.UserDTO;
 import inputDevices.Keyboard;
+
+import java.util.List;
 
 public class TUIBasic implements IUserInterface {
 

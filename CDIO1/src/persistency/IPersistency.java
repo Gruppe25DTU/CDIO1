@@ -1,9 +1,9 @@
 package persistency;
 
+import dto.UserDTO;
+
 import java.util.ArrayList;
 import java.util.Set;
-
-import dto.UserDTO;
 
 public interface IPersistency {
 	

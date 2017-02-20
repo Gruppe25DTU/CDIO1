@@ -1,12 +1,12 @@
 package view;
 
-import java.util.*;
-
 import Stringbank.TUIBasic_Strings;
 import dal.IUserDAO;
 import dal.IUserDAO.DALException;
 import dto.UserDTO;
 import inputDevices.Keyboard;
+
+import java.util.*;
 
 public class TUIController {
 
@@ -159,9 +159,8 @@ public class TUIController {
 			List<UserDTO> users = f.getUserList();
 			ui.displayMessage(s.getText(2));
 			if(users!=null)
-				for(int i = 0; i<users.size();i++)
-				{
-					ui.displayMessage(".."+users.get(i));
+				for (UserDTO user : users) {
+					ui.displayMessage(".." + user);
 				}
 		} catch (DALException e) 
 		{

@@ -5,9 +5,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-/**
- * Created by ymuslu on 20-02-2017.
- */
 public class RuleSetBasic implements IRuleSet {
 
     private static final String ID_STRING = "id", NAME_STRING = "name"
@@ -53,10 +50,8 @@ public class RuleSetBasic implements IRuleSet {
                     int hasNumber = t.matches(".*[0-9]+.*") ? 1 : 0;
                     int hasSpecial = t.matches(".*[.-_+!?=]+.*") ? 1 : 0;
                     boolean hasIllegal = !t.matches("[a-zæøåA-ZÆØÅ0-9.-_+!?=]*");
-                    if (hasIllegal) {
-                        return false;
-                    }
-                    return ((hasSize + hasLowerCase + hasUpper + hasNumber + hasSpecial) >= minPwdReq);
+
+                    return (!hasIllegal && ((hasSize + hasLowerCase + hasUpper + hasNumber + hasSpecial) >= minPwdReq));
                 }
                 );
         String roleRuleString = "Following roles cannot be assigned at the same time:";
@@ -69,10 +64,10 @@ public class RuleSetBasic implements IRuleSet {
         Rule roleRule = new Rule<Set<String>>(
                 roleRuleString
                 , t -> {
-            for (int i = 0; i < exclusiveRoles.length; i++) {
+            for (String[] exclusiveRole : exclusiveRoles) {
                 int count = 0;
-                for (int j = 0; j < exclusiveRoles[i].length; j++) {
-                    if (t.contains(exclusiveRoles[i][j])) {
+                for (int j = 0; j < exclusiveRole.length; j++) {
+                    if (t.contains(exclusiveRole[j])) {
                         count++;
                     }
                 }
