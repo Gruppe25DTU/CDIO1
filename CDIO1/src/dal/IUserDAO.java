@@ -2,7 +2,6 @@ package dal;
 
 
 import java.util.*;
-import java.util.function.Predicate;
 
 import dto.UserDTO;
 
@@ -21,8 +20,6 @@ public interface IUserDAO {
     boolean setPwd(UserDTO user) throws DALException;
 	boolean deleteUser(int userId) throws DALException;
 	Set<Integer> getAvailableIDs() throws DALException;
-	String getRequirement(String method);
-    Map<String, Rule> ruleList = new HashMap<> ();
     boolean addRole(UserDTO user, String role);
     HashSet<String> getAvailableRoles(UserDTO user);
     void updateUser(UserDTO selected, int selectedOriginalID);
@@ -32,6 +29,13 @@ public interface IUserDAO {
        add("Foreman");
        add("Operator");
     }};
+
+    IRuleSet.Rule getIdReq();
+    IRuleSet.Rule getNameReq();
+    IRuleSet.Rule getIniReq();
+    IRuleSet.Rule getCprReq();
+    IRuleSet.Rule getRoleReq();
+    IRuleSet.Rule getPwdReq();
 
     class DALException extends Exception {
 
@@ -48,24 +52,5 @@ public interface IUserDAO {
 			super(msg);
 		}
 
-    }
-
-    class Rule<T> {
-        String text;
-        Predicate<T> pred;
-
-        public Rule(String text, Predicate<T> pred) {
-            this.text = text;
-            this.pred = pred;
-    }
-
-    public boolean test(T t) {
-      return pred.test(t);
-    }
-
-    @Override
-    public String toString() {
-      return text;
-    }
     }
 }

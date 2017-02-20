@@ -1,19 +1,20 @@
 package dal;
 
 import java.util.*;
-import java.util.regex.Pattern;
 
 import dto.UserDTO;
 import persistency.IPersistency;
 
 public class UserDAOBasic implements IUserDAO {
 
+	private IRuleSet ruleSet;
 	private IPersistency persistencyManager;
 	private Set<Integer> allowedIDs = new HashSet<>();
 
 	public UserDAOBasic(IPersistency persistencyManager) {
-		createRuleSet();
+		ruleSet = new RuleSetBasic();
 		this.persistencyManager = persistencyManager;
+		//TODO: Fix hardcoded values!
 		for (int i = 0; i < 99; i++) {
 			allowedIDs.add(i);
 		}
@@ -64,7 +65,7 @@ public class UserDAOBasic implements IUserDAO {
 
     @Override
 	public boolean setID(UserDTO user, int id) throws DALException {
-		if (ruleList.get("id").test(id)) {
+		if (ruleSet.getIdReq().test(id)) {
 			user.setUserId(id);
 			return true;
 		}
@@ -73,7 +74,7 @@ public class UserDAOBasic implements IUserDAO {
 
 	@Override
 	public boolean setName(UserDTO user, String name) throws DALException {
-		if (ruleList.get("name").test(name)) {
+		if (ruleSet.getNameReq().test(name)) {
 			user.setUserName(name);
 			return true;
 		}
@@ -82,7 +83,7 @@ public class UserDAOBasic implements IUserDAO {
 
 	@Override
 	public boolean setInitials(UserDTO user, String initials) throws DALException {
-		if (ruleList.get("init").test(initials)) {
+		if (ruleSet.getIniReq().test(initials)) {
 			user.setIni(initials);
 			return true;
 		}
@@ -91,7 +92,7 @@ public class UserDAOBasic implements IUserDAO {
 
 	@Override
 	public boolean setCpr(UserDTO user, String cpr) throws DALException {
-		if (ruleList.get("cpr").test(cpr)) {
+		if (ruleSet.getCprReq().test(cpr)) {
 			user.setCpr(cpr);
 			return true;
 		}
@@ -100,7 +101,7 @@ public class UserDAOBasic implements IUserDAO {
 
 	@Override
 	public boolean setPwd(UserDTO user, String pwd) throws DALException {
-		if (ruleList.get("pwd").test(pwd)) {
+		if (ruleSet.getPwdReq().test(pwd)) {
 			user.setPassword(pwd);
 			return true;
 		}
@@ -110,7 +111,7 @@ public class UserDAOBasic implements IUserDAO {
 	@Override
 	public boolean setPwd(UserDTO user) throws DALException {
 		String pwd = "";
-		while (!ruleList.get("pwd").test(pwd)) {
+		while (!ruleSet.getPwdReq().test(pwd)) {
 			pwd = Password.makePassword(6);
 		}
 		user.setPassword(pwd);
@@ -142,7 +143,7 @@ public class UserDAOBasic implements IUserDAO {
 	public boolean addRole(UserDTO user, String role) {
 	    Set<String> tmp = new HashSet<>(user.getRoles());
 	    tmp.add(role);
-	    if (ruleList.get("role").test(tmp)) {
+	    if (ruleSet.getRoleReq().test(tmp)) {
 	        user.setRoles(tmp);
 	        return true;
         }
@@ -155,7 +156,7 @@ public class UserDAOBasic implements IUserDAO {
         Set<String> used = new HashSet<>(user.getRoles());
         for (String role : roles) {
             if (used.add(role)) {
-                if (ruleList.get("role").test(used)) {
+                if (ruleSet.getRoleReq().test(used)) {
                     available.add(role);
                 }
                 used.remove(role);
@@ -169,80 +170,34 @@ public class UserDAOBasic implements IUserDAO {
 		persistencyManager.updateUser(user, originalID);
 	}
 
-	public String getRequirement(String method) {
-		return ruleList.get(method).toString();
-    }
+	@Override
+	public IRuleSet.Rule getIdReq() {
+		return ruleSet.getIdReq();
+	}
 
+	@Override
+	public IRuleSet.Rule getNameReq() {
+		return ruleSet.getNameReq();
+	}
 
-    private void createRuleSet() {
-		int minID = 11, maxID = 99;
-		int minName = 2, maxName = 20;
-		int minIni = 2, maxIni = 3;
-		int minPwd = 6, minPwdReq = 3;
-		String[][] exclusiveRoles = new String[][] {{
-		   "Pharmacist", "Foreman",
-        }};
-		Rule idRule = new Rule<Integer>
-				("ID must be between" + minID + " and " + maxID
-						, t -> t > minID && t < maxID);
-		Rule nameRule = new Rule<String>
-				("Name must be between " + minName + " and " + maxName + " characters"
-						, t -> t.length() >= minName && t.length() <= maxName);
-		Rule iniRule = new Rule<String>
-				("Initials must be between " + minIni + " and " + maxIni + " characters"
-						, t -> t.length() >= minIni && t.length() <= maxIni);
-		Rule cprRule = new Rule<String>
-				("CPR must be entered as 'xxxxxx-yyyy' or 'xxxxxxyyyy'"
-						, t -> Pattern.matches("[0-9]{6}-?[0-9]{4}", t));
-		Rule pwdRule = new Rule<String>
-				("Password must be at least " + minPwd + " long and contain at least "
-						+ minPwdReq + " of these categories:\n" +
-						"* Lowercase letters\n" +
-						"* Uppercase letters\n" +
-						"* Numbers\n" +
-						"* Special characters (Use only\". - _ + ! ? =\")"
-						, t -> {
-					int hasSize = t.length() >= minPwd ? 1 : 0;
-					int hasLowerCase = t.matches(".*[a-zæøå]+.*") ? 1 : 0;
-					int hasUpper = t.matches(".*[A-ZÆØÅ]+.*") ? 1 : 0;
-					int hasNumber = t.matches(".*[0-9]+.*") ? 1 : 0;
-					int hasSpecial = t.matches(".*[.-_+!?=]+.*") ? 1 : 0;
-					boolean hasIllegal = !t.matches("[a-zæøåA-ZÆØÅ0-9.-_+!?=]*");
-					if (hasIllegal) {
-						return false;
-					}
-					return ((hasSize + hasLowerCase + hasUpper + hasNumber + hasSpecial) >= minPwdReq);
-				}
-				);
-		String roleRuleString = "Following roles cannot be assigned at the same time:";
-		for (int i = 0; i < exclusiveRoles.length; i++) {
-		    roleRuleString += "Exclusive Group " + i + "\n";
-		    for (int j = 0; j < exclusiveRoles[i].length; j++) {
-		        roleRuleString += "\t\"" + exclusiveRoles[i][j] + "\"\n";
-            }
-        }
-		Rule roleRule = new Rule<Set<String>>(
-                roleRuleString
-                , t -> {
-		            for (int i = 0; i < exclusiveRoles.length; i++) {
-		                int count = 0;
-		                for (int j = 0; j < exclusiveRoles[i].length; j++) {
-		                    if (t.contains(exclusiveRoles[i][j])) {
-		                        count++;
-                            }
-                        }
-                        if (count > 1) {
-		                    return false;
-                        }
-                    }
-                    return true;
-        });
-		ruleList.put("id", idRule);
-		ruleList.put("name", nameRule);
-		ruleList.put("init", iniRule);
-		ruleList.put("cpr", cprRule);
-		ruleList.put("pwd", pwdRule);
-		ruleList.put("role", roleRule);
+	@Override
+	public IRuleSet.Rule getIniReq() {
+		return ruleSet.getIniReq();
+	}
+
+	@Override
+	public IRuleSet.Rule getCprReq() {
+		return ruleSet.getCprReq();
+	}
+
+	@Override
+	public IRuleSet.Rule getRoleReq() {
+		return ruleSet.getRoleReq();
+	}
+
+	@Override
+	public IRuleSet.Rule getPwdReq() {
+		return ruleSet.getPwdReq();
 	}
 
 

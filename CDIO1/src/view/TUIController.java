@@ -283,8 +283,7 @@ public class TUIController {
 	private String chooseName(UserDTO user) throws Keyboard.DALKeyboardInterruptException, DALException {
 		String name = user.getUserName();
 		do {
-		    //TODO: FIX hardcoded string!
-		    ui.displayMessage(f.getRequirement("name"));
+		    ui.displayMessage(f.getNameReq().toString());
 			name = ui.getResponse(s.getText(9));
 		} while (!f.setName(user, name));
 		return name;
@@ -300,8 +299,7 @@ public class TUIController {
 	private String chooseInitials(UserDTO user) throws Keyboard.DALKeyboardInterruptException, DALException {
 		String ini = user.getIni();
 		do {
-            //TODO: FIX hardcoded string!
-            ui.displayMessage(f.getRequirement("init"));
+            ui.displayMessage(f.getIniReq().toString());
 			ini = ui.getResponse(s.getText(10));
 		} while (!f.setInitials(user, ini));
 		return ini;
@@ -317,8 +315,7 @@ public class TUIController {
 	private String chooseCPR(UserDTO user) throws Keyboard.DALKeyboardInterruptException, DALException {
 		String cpr = user.getCpr();
 		do {
-            //TODO: FIX hardcoded string!
-            ui.displayMessage(f.getRequirement("cpr"));
+            ui.displayMessage(f.getCprReq().toString());
 			cpr = ui.getResponse(s.getText(11));
 		} while (!f.setCpr(user, cpr));
 		return cpr;
@@ -393,7 +390,7 @@ public class TUIController {
         if (selected != null) {
             String pwd;
             do {
-                ui.displayMessage(f.getRequirement("pwd"));
+                ui.displayMessage(f.getPwdReq().toString());
                 pwd = ui.getResponse(s.getText(24));
             } while (!f.setPwd(selected, pwd));
         }
