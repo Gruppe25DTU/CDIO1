@@ -1,15 +1,21 @@
 package dal;
 
+import java.util.Set;
 import java.util.function.Predicate;
 
 public interface IRuleSet {
 
-    Rule getIdReq();
-    Rule getNameReq();
-    Rule getIniReq();
-    Rule getCprReq();
-    Rule getRoleReq();
-    Rule getPwdReq();
+    Rule<Integer> getIdReq();
+
+    Rule<String> getNameReq();
+
+    Rule<String> getIniReq();
+
+    Rule<String> getCprReq();
+
+    Rule<Set<String>> getRoleReq();
+
+    Rule<String> getPwdReq();
 
     class Rule<T> {
         String text;

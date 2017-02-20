@@ -11,13 +11,13 @@ import view.TUIController;
 public class TestController {
 
 
-	public static void main(String[] args) {
-		IPersistency persistency = new FileSaver();
-		IUserDAO logic = new UserDAOBasic(persistency);
-		IUserInterface ui = new TUIBasic();
-		TUIController ctrl = new TUIController(ui,logic);
-		ctrl.run();
+    public static void main(String[] args) {
+        IPersistency persistency = new FileSaver();
+        IUserDAO logic = new UserDAOBasic(persistency);
+        IUserInterface ui = new TUIBasic();
+        TUIController ctrl = new TUIController(ui, logic);
+        ctrl.run();
 
-	}
+    }
 
 }

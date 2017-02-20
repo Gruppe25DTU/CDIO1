@@ -5,11 +5,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+@SuppressWarnings("unchecked")
 public class RuleSetBasic implements IRuleSet {
 
-    private static final String ID_STRING = "id", NAME_STRING = "name"
-            , INITIALS_STRING = "initials", ROLES_STRING = "roles"
-            , CPR_STRING = "cpr", PWD_STRING = "pwd";
+    private static final String ID_STRING = "id", NAME_STRING = "name", INITIALS_STRING = "initials", ROLES_STRING = "roles", CPR_STRING = "cpr", PWD_STRING = "pwd";
     Map<String, Rule> ruleList = new HashMap<>();
 
     public RuleSetBasic() {
@@ -21,7 +20,7 @@ public class RuleSetBasic implements IRuleSet {
         int minName = 2, maxName = 20;
         int minIni = 2, maxIni = 3;
         int minPwd = 6, minPwdReq = 3;
-        String[][] exclusiveRoles = new String[][] {{
+        String[][] exclusiveRoles = new String[][]{{
                 "Pharmacist", "Foreman",
         }};
         Rule<Integer> idRule = new Rule<>
@@ -64,10 +63,10 @@ public class RuleSetBasic implements IRuleSet {
         Rule roleRule = new Rule<Set<String>>(
                 roleRuleString
                 , t -> {
-            for (String[] exclusiveRole : exclusiveRoles) {
+            for (String[] exclusionGroup : exclusiveRoles) {
                 int count = 0;
-                for (int j = 0; j < exclusiveRole.length; j++) {
-                    if (t.contains(exclusiveRole[j])) {
+                for (String anExclusiveRole : exclusionGroup) {
+                    if (t.contains(anExclusiveRole)) {
                         count++;
                     }
                 }
@@ -86,32 +85,32 @@ public class RuleSetBasic implements IRuleSet {
     }
 
     @Override
-    public Rule getIdReq() {
+    public Rule<Integer> getIdReq() {
         return ruleList.get(ID_STRING);
     }
 
     @Override
-    public Rule getNameReq() {
+    public Rule<String> getNameReq() {
         return ruleList.get(NAME_STRING);
     }
 
     @Override
-    public Rule getIniReq() {
+    public Rule<String> getIniReq() {
         return ruleList.get(INITIALS_STRING);
     }
 
     @Override
-    public Rule getCprReq() {
+    public Rule<String> getCprReq() {
         return ruleList.get(CPR_STRING);
     }
 
     @Override
-    public Rule getRoleReq() {
+    public Rule<Set<String>> getRoleReq() {
         return ruleList.get(ROLES_STRING);
     }
 
     @Override
-    public Rule getPwdReq() {
+    public Rule<String> getPwdReq() {
         return ruleList.get(PWD_STRING);
     }
 }

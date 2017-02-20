@@ -19,38 +19,37 @@ public class FileSaver implements IPersistency {
     }
 
     public void init() {
-    ObjectInputStream oIS = null;
+        ObjectInputStream oIS = null;
         try {
-          FileInputStream fIS = new FileInputStream(FILE_NAME);
-          oIS = new ObjectInputStream(fIS);
-          Object inObj = oIS.readObject();
-          if (inObj instanceof Map){
-              userList = (Map<Integer, UserDTO>) inObj;
-          } else {
-            //throw new DALException("Wrong object in file");
-              return;
-          }
+            FileInputStream fIS = new FileInputStream(FILE_NAME);
+            oIS = new ObjectInputStream(fIS);
+            Object inObj = oIS.readObject();
+            if (inObj instanceof Map) {
+                userList = (Map<Integer, UserDTO>) inObj;
+            } else {
+                //throw new DALException("Wrong object in file");
+                return;
+            }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
-          //No problem - just returning empty userstore
+            //No problem - just returning empty userstore
         } catch (IOException e) {
             e.printStackTrace();
-          //throw new DALException("Error while reading disk!", e);
+            //throw new DALException("Error while reading disk!", e);
             return;
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
-          //throw new DALException("Error while reading file - Class not found!", e);
+            //throw new DALException("Error while reading file - Class not found!", e);
             return;
         } finally {
-          if (oIS!=null){
-            try {
-              oIS.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-              //throw new DALException("Error closing pObjectStream!", e);
-                return;
+            if (oIS != null) {
+                try {
+                    oIS.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    //throw new DALException("Error closing pObjectStream!", e);
+                }
             }
-          }
         }
     }
 
@@ -107,7 +106,7 @@ public class FileSaver implements IPersistency {
             //throw new DALException("Error writing to disk", e);
             return;
         } finally {
-            if (oOS!=null) {
+            if (oOS != null) {
                 try {
                     oOS.close();
                 } catch (IOException e) {//throw new DALException("Unable to close ObjectStream", e);

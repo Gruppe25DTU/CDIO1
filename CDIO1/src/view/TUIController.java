@@ -10,373 +10,338 @@ import java.util.*;
 
 public class TUIController {
 
-	private boolean updating = false;
-	private int selectedOriginalID;
-	private UserDTO selected;
-	private IUserInterface ui;
-	private IUserDAO f;
-	private TUIBasic_Strings s;
-	private HashMap<String, Command> commandMap;
-	private HashMap<String, Command> updateMap;
-	private boolean running;
+    private boolean updating = false;
+    private int selectedOriginalID;
+    private UserDTO selected;
+    private IUserInterface ui;
+    private IUserDAO f;
+    private TUIBasic_Strings s;
+    private HashMap<String, Command> commandMap;
+    private HashMap<String, Command> updateMap;
+    private boolean running;
 
-	private class Command {
-    
-    Runnable method;
-    String desc, help;
-    
-    public Command(Runnable method, String desc, String help) {
-      this.method = method;
-      this.desc = desc;
-      this.help = help;
+    private class Command {
+
+        Runnable method;
+        String desc, help;
+
+        public Command(Runnable method, String desc, String help) {
+            this.method = method;
+            this.desc = desc;
+            this.help = help;
+
+        }
+
+        @Override
+        public String toString() {
+            return desc;
+        }
+
+        public String getHelp() {
+            return help;
+        }
+
+        public void run() {
+            method.run();
+        }
 
     }
-    
-    @Override
-    public String toString() {
-      return desc;
-    }
-    
-    public String getHelp() {
-      return help;
+
+    public TUIController(IUserInterface ui, IUserDAO f) {
+        this.f = f;
+        this.ui = ui;
+        s = new TUIBasic_Strings();
+        running = true;
     }
 
-    public void run() {
-      method.run();
+    private interface UpdateMethod extends Runnable {
+        void method() throws DALException, Keyboard.DALKeyboardInterruptException;
+
+        default void run() {
+            try {
+                method();
+            } catch (DALException | Keyboard.DALKeyboardInterruptException e) {
+                e.printStackTrace();
+            }
+        }
     }
-    
-  }
-	
-	public TUIController(IUserInterface ui, IUserDAO f) 
-	{
-		this.f = f;
-		this.ui = ui;
-		s = new TUIBasic_Strings();
-		running = true;
-	}
 
-	private interface UpdateMethod extends Runnable {
-		void method() throws DALException, Keyboard.DALKeyboardInterruptException;
-		default void run() {
-			try {
-				method();
-			} catch (DALException e) {
-				e.printStackTrace();
-			} catch (Keyboard.DALKeyboardInterruptException e) {
-				e.printStackTrace();
-			}
-		}
-	}
-	
-	public void initCommandList() {
-		Command create = new Command(this::createUser, "Create a new User", "Help for Create User goes here!");
-		Command list = new Command(this::listUsers, "List all existing Users", "Help for List goes here!");
-		Command update = new Command(this::updateUser, "Update an existing User", "Help for Update User goes here!");
-		Command delete = new Command(this::deleteUser, "Delete an existing User", "Help for Delete User goes here!");
-		Command quit = new Command(this::quit, "Quit the program", "Help for Quit goes here!");
-		commandMap = new HashMap<>();
-		commandMap.put("1", create);
-		commandMap.put("2", list);
-		commandMap.put("3", update);
-		commandMap.put("4", delete);
-		commandMap.put("5", quit);
+    public void initCommandList() {
+        Command create = new Command(this::createUser, "Create a new User", "Help for Create User goes here!");
+        Command list = new Command(this::listUsers, "List all existing Users", "Help for List goes here!");
+        Command update = new Command(this::updateUser, "Update an existing User", "Help for Update User goes here!");
+        Command delete = new Command(this::deleteUser, "Delete an existing User", "Help for Delete User goes here!");
+        Command quit = new Command(this::quit, "Quit the program", "Help for Quit goes here!");
+        commandMap = new HashMap<>();
+        commandMap.put("1", create);
+        commandMap.put("2", list);
+        commandMap.put("3", update);
+        commandMap.put("4", delete);
+        commandMap.put("5", quit);
 
 
-		Command name = new Command((UpdateMethod) this::chooseName, "Update Name", "Help for Update Name goes here");
-		Command initials = new Command((UpdateMethod) this::chooseInitials, "Update Initials", "Help for Update Initials goes here");
-		Command cpr = new Command((UpdateMethod) this::chooseCPR, "Update CPR", "Help for Update CPR goes here");
-		Command roles = new Command((UpdateMethod) this::chooseRoles, "Update Roles", "Help for Update Roles goes here");
-		Command finish = new Command((UpdateMethod) this::finishUpdate, "Save Changes", "Help for Save Changes goes here");
-		Command pwd = new Command((UpdateMethod) this::choosePwd, "Update Password", "Help for Update Password goes here");
-		updateMap = new HashMap<>();
-		updateMap.put("1", name);
-		updateMap.put("2", initials);
-		updateMap.put("3", cpr);
-		updateMap.put("4", roles);
-		updateMap.put("5", pwd);
-		updateMap.put("6", finish);
-	}
+        Command name = new Command((UpdateMethod) this::chooseName, "Update Name", "Help for Update Name goes here");
+        Command initials = new Command((UpdateMethod) this::chooseInitials, "Update Initials", "Help for Update Initials goes here");
+        Command cpr = new Command((UpdateMethod) this::chooseCPR, "Update CPR", "Help for Update CPR goes here");
+        Command roles = new Command((UpdateMethod) this::chooseRoles, "Update Roles", "Help for Update Roles goes here");
+        Command finish = new Command((UpdateMethod) this::finishUpdate, "Save Changes", "Help for Save Changes goes here");
+        Command pwd = new Command((UpdateMethod) this::choosePwd, "Update Password", "Help for Update Password goes here");
+        updateMap = new HashMap<>();
+        updateMap.put("1", name);
+        updateMap.put("2", initials);
+        updateMap.put("3", cpr);
+        updateMap.put("4", roles);
+        updateMap.put("5", pwd);
+        updateMap.put("6", finish);
+    }
 
-	public void menu()
-	{
-		initCommandList();
-		List<String> menu = new ArrayList<>();
-		for(String key : commandMap.keySet()) {
-			  menu.add("["+key+"]" + " : " + commandMap.get(key));
-		}
+    public void menu() {
+        initCommandList();
+        List<String> menu = new ArrayList<>();
+        for (String key : commandMap.keySet()) {
+            menu.add("[" + key + "]" + " : " + commandMap.get(key));
+        }
 
         ui.displayMessage("\n" + s.getText(1));
-		while(running) {
-			//TODO: Stringbank
-			ui.showMenu(menu);
-			String input = "";
-			try {
-				input = ui.getResponse("");
-			} catch (Keyboard.DALKeyboardInterruptException e) {
-				e.printStackTrace();
-				//TODO: Fix quit order / system!
-				quit();
-			}
-			Command cmd;
-			if ((cmd = commandMap.get(input)) != null) {
-			  cmd.run();
-			}
-			
-		}
-	}
+        while (running) {
+            //TODO: Stringbank
+            ui.showMenu(menu);
+            String input = "";
+            try {
+                input = ui.getResponse("");
+            } catch (Keyboard.DALKeyboardInterruptException e) {
+                e.printStackTrace();
+                //TODO: Fix quit order / system!
+                quit();
+            }
+            Command cmd;
+            if ((cmd = commandMap.get(input)) != null) {
+                cmd.run();
+            }
 
-	public void createUser()
-	{
-		try
-		{
-			UserDTO newUser = f.createUser();
-			chooseName(newUser);
-			chooseInitials(newUser);
-			chooseCPR(newUser);
-			chooseRoles(newUser);
-			try
-			{
-				ui.displayMessage("User to be saved:\n" + newUser);
-				if(ui.confirmInput())
-					f.saveUser(newUser);
-			}
-			catch (DALException|Keyboard.DALKeyboardInterruptException e) {
-				e.printStackTrace();
-				return;
-			}
-		} catch (DALException e) {
-			e.printStackTrace();
-		} catch (Keyboard.DALKeyboardInterruptException e) {
-			e.printStackTrace();
-			return;
-		}
-	}
+        }
+    }
 
-	public void listUsers()
-	{
-		try 
-		{
-			List<UserDTO> users = f.getUserList();
-			ui.displayMessage(s.getText(2));
-			if(users!=null)
-				for (UserDTO user : users) {
-					ui.displayMessage(".." + user);
-				}
-		} catch (DALException e) 
-		{
-			e.printStackTrace();
-			ui.displayMessage("Unable to retrieve user list!");
-		}
-	}
+    public void createUser() {
+        try {
+            UserDTO newUser = f.createUser();
+            chooseName(newUser);
+            chooseInitials(newUser);
+            chooseCPR(newUser);
+            chooseRoles(newUser);
+            try {
+                ui.displayMessage("User to be saved:\n" + newUser);
+                if (ui.confirmInput())
+                    f.saveUser(newUser);
+            } catch (DALException | Keyboard.DALKeyboardInterruptException e) {
+                e.printStackTrace();
+                return;
+            }
+        } catch (DALException e) {
+            e.printStackTrace();
+        } catch (Keyboard.DALKeyboardInterruptException e) {
+            e.printStackTrace();
+            return;
+        }
+    }
 
-	public void updateUser()
-	{
-		ui.displayMessage(s.getText(4));
-		UserDTO user;
-		while(true)
-		{
-			int userId = -1;
-			try {
-				userId = ui.getInt("");
-			} catch (Keyboard.DALKeyboardInterruptException e) {
-				e.printStackTrace();
-				return;
-			}
-			if (userId != -1)
-			{
-				try
-				{
-					user = f.getUser(userId);
-					if(user != null)
-					{
-						chooseWhatToUpdate(user);
-						break;
-					}
-					else
-						ui.displayMessage(s.getText(21));
-				}
-				catch(DALException e)
-				{
-					ui.displayMessage(e.getMessage());
-				}
-			}
-		}
-	}
+    public void listUsers() {
+        try {
+            List<UserDTO> users = f.getUserList();
+            ui.displayMessage(s.getText(2));
+            if (users != null)
+                for (UserDTO user : users) {
+                    ui.displayMessage(".." + user);
+                }
+        } catch (DALException e) {
+            e.printStackTrace();
+            ui.displayMessage("Unable to retrieve user list!");
+        }
+    }
 
-	private void chooseWhatToUpdate(UserDTO user)
-	{
-		selected = new UserDTO(user);
-		selectedOriginalID = user.getUserID();
-		List<String> menu = new ArrayList<>();
-		for(String key : updateMap.keySet()) {
-			menu.add("["+key+"]" + " : " + updateMap.get(key));
-		}
+    public void updateUser() {
+        ui.displayMessage(s.getText(4));
+        UserDTO user;
+        while (true) {
+            int userId = -1;
+            try {
+                userId = ui.getInt("");
+            } catch (Keyboard.DALKeyboardInterruptException e) {
+                e.printStackTrace();
+                return;
+            }
+            if (userId != -1) {
+                try {
+                    user = f.getUser(userId);
+                    if (user != null) {
+                        chooseWhatToUpdate(user);
+                        break;
+                    } else
+                        ui.displayMessage(s.getText(21));
+                } catch (DALException e) {
+                    ui.displayMessage(e.getMessage());
+                }
+            }
+        }
+    }
 
-		updating = true;
-		while(updating)
-		{
-			ui.displayMessage(s.getText(5), user.getUserName());
-			ui.showMenu(menu);
-			String input = "";
-			try {
-				input = ui.getResponse("");
-			} catch (Keyboard.DALKeyboardInterruptException e) {
-				e.printStackTrace();
-				return;
-			}
-			Command cmd;
-			if ((cmd = updateMap.get(input)) != null) {
-				cmd.run();
-			}
-		}
-	}
+    private void chooseWhatToUpdate(UserDTO user) {
+        selected = new UserDTO(user);
+        selectedOriginalID = user.getUserID();
+        List<String> menu = new ArrayList<>();
+        for (String key : updateMap.keySet()) {
+            menu.add("[" + key + "]" + " : " + updateMap.get(key));
+        }
 
-	public void deleteUser()
-	{
-		ui.displayMessage(s.getText(7));
-		while(true)
-		{
-			int userId = -1;
-			try {
-				userId = ui.getInt("");
-			} catch (Keyboard.DALKeyboardInterruptException e) {
-				e.printStackTrace();
-				return;
-			}
-			if(userId!=-1)
-			{
-				try {
-					UserDTO user = f.getUser(userId);
-					if (user != null) {
-						ui.displayMessage("Deleting user:\n" + user);
-					}
-					if(ui.confirmInput())
-					{
-						ui.displayMessage(s.getText(8), userId);
-						f.deleteUser(userId);
-						break;
-					}
-					else
-						break;
+        updating = true;
+        while (updating) {
+            ui.displayMessage(s.getText(5), user.getUserName());
+            ui.showMenu(menu);
+            String input = "";
+            try {
+                input = ui.getResponse("");
+            } catch (Keyboard.DALKeyboardInterruptException e) {
+                e.printStackTrace();
+                return;
+            }
+            Command cmd;
+            if ((cmd = updateMap.get(input)) != null) {
+                cmd.run();
+            }
+        }
+    }
 
-				} catch (DALException e) {
-					e.printStackTrace();
-				} catch (Keyboard.DALKeyboardInterruptException e) {
-					e.printStackTrace();
-					return;
-				}
-			}
-			else {
-				ui.displayMessage(s.getText(20));
-			}
-		}
-	}
+    public void deleteUser() {
+        ui.displayMessage(s.getText(7));
+        while (true) {
+            int userId = -1;
+            try {
+                userId = ui.getInt("");
+            } catch (Keyboard.DALKeyboardInterruptException e) {
+                e.printStackTrace();
+                return;
+            }
+            if (userId != -1) {
+                try {
+                    UserDTO user = f.getUser(userId);
+                    if (user != null) {
+                        ui.displayMessage("Deleting user:\n" + user);
+                    }
+                    if (ui.confirmInput()) {
+                        ui.displayMessage(s.getText(8), userId);
+                        f.deleteUser(userId);
+                        break;
+                    } else
+                        break;
 
-	private void quit()
-	{
-		running = false;
-		f.quit();
-		ui.quit();
-	}
+                } catch (DALException e) {
+                    e.printStackTrace();
+                } catch (Keyboard.DALKeyboardInterruptException e) {
+                    e.printStackTrace();
+                    return;
+                }
+            } else {
+                ui.displayMessage(s.getText(20));
+            }
+        }
+    }
 
-	private String chooseName(UserDTO user) throws Keyboard.DALKeyboardInterruptException, DALException {
-		String name = user.getUserName();
-		do {
-		    ui.displayMessage(f.getNameReq().toString());
-			name = ui.getResponse(s.getText(9));
-		} while (!f.setName(user, name));
-		return name;
-	}
+    private void quit() {
+        running = false;
+        f.quit();
+        ui.quit();
+    }
 
-	private String chooseName() throws DALException, Keyboard.DALKeyboardInterruptException {
-		if (selected != null) {
-			return chooseName(selected);
-		}
-		throw new DALException("No user selected!");
-	}
+    private String chooseName(UserDTO user) throws Keyboard.DALKeyboardInterruptException, DALException {
+        String name = user.getUserName();
+        do {
+            ui.displayMessage(f.getNameReq().toString());
+            name = ui.getResponse(s.getText(9));
+        } while (!f.setName(user, name));
+        return name;
+    }
 
-	private String chooseInitials(UserDTO user) throws Keyboard.DALKeyboardInterruptException, DALException {
-		String ini = user.getIni();
-		do {
+    private String chooseName() throws DALException, Keyboard.DALKeyboardInterruptException {
+        if (selected != null) {
+            return chooseName(selected);
+        }
+        throw new DALException("No user selected!");
+    }
+
+    private String chooseInitials(UserDTO user) throws Keyboard.DALKeyboardInterruptException, DALException {
+        String ini = user.getIni();
+        do {
             ui.displayMessage(f.getIniReq().toString());
-			ini = ui.getResponse(s.getText(10));
-		} while (!f.setInitials(user, ini));
-		return ini;
-	}
+            ini = ui.getResponse(s.getText(10));
+        } while (!f.setInitials(user, ini));
+        return ini;
+    }
 
-	private String chooseInitials() throws DALException, Keyboard.DALKeyboardInterruptException {
-		if (selected != null) {
-			return chooseInitials(selected);
-		}
-		throw new DALException("No user selected!");
-	}
+    private String chooseInitials() throws DALException, Keyboard.DALKeyboardInterruptException {
+        if (selected != null) {
+            return chooseInitials(selected);
+        }
+        throw new DALException("No user selected!");
+    }
 
-	private String chooseCPR(UserDTO user) throws Keyboard.DALKeyboardInterruptException, DALException {
-		String cpr = user.getCpr();
-		do {
+    private String chooseCPR(UserDTO user) throws Keyboard.DALKeyboardInterruptException, DALException {
+        String cpr = user.getCpr();
+        do {
             ui.displayMessage(f.getCprReq().toString());
-			cpr = ui.getResponse(s.getText(11));
-		} while (!f.setCpr(user, cpr));
-		return cpr;
-	}
+            cpr = ui.getResponse(s.getText(11));
+        } while (!f.setCpr(user, cpr));
+        return cpr;
+    }
 
-	private String chooseCPR() throws DALException, Keyboard.DALKeyboardInterruptException {
-		if (selected != null) {
-			return chooseCPR(selected);
-		}
-		throw new DALException("No user selected!");
-	}
+    private String chooseCPR() throws DALException, Keyboard.DALKeyboardInterruptException {
+        if (selected != null) {
+            return chooseCPR(selected);
+        }
+        throw new DALException("No user selected!");
+    }
 
-	private Set<String> chooseRoles(UserDTO user) throws Keyboard.DALKeyboardInterruptException
-	{
-		Set<String> chosenRoles = user.getRoles();
-		HashSet<String> roles = f.getAvailableRoles(user);
-		ui.displayMessage(s.getText(16));
-		while(roles.size()>0)
-		{
-			chosenRoles = user.getRoles();
-			//Print a list of all chosen roles
-			String chosenRolesMsg = s.getText(19);
-			for(int i = 0; i < chosenRoles.size(); i++)
-			{
-				chosenRolesMsg += "\n\t" + chosenRoles.toArray()[i];
-			}
-			chosenRolesMsg += "\n";
-			ui.displayMessage(chosenRolesMsg);
+    private Set<String> chooseRoles(UserDTO user) throws Keyboard.DALKeyboardInterruptException {
+        Set<String> chosenRoles = user.getRoles();
+        HashSet<String> roles = f.getAvailableRoles(user);
+        ui.displayMessage(s.getText(16));
+        while (roles.size() > 0) {
+            chosenRoles = user.getRoles();
+            //Print a list of all chosen roles
+            String chosenRolesMsg = s.getText(19);
+            for (int i = 0; i < chosenRoles.size(); i++) {
+                chosenRolesMsg += "\n\t" + chosenRoles.toArray()[i];
+            }
+            chosenRolesMsg += "\n";
+            ui.displayMessage(chosenRolesMsg);
 
-			//Prints a list of all the available roles
-			String msg = s.getText(17);
-			for(int i = 0; i < roles.size(); i++)
-			{
-				msg += "\n"+String.format(s.getText(18), i+1, roles.toArray()[i]);
-			}
-			msg += "\n"+String.format(s.getText(18), roles.size()+1, "Done choosing");
-			msg += "\n"+String.format(s.getText(18), roles.size()+2, "Clear user's roles");
+            //Prints a list of all the available roles
+            String msg = s.getText(17);
+            for (int i = 0; i < roles.size(); i++) {
+                msg += "\n" + String.format(s.getText(18), i + 1, roles.toArray()[i]);
+            }
+            msg += "\n" + String.format(s.getText(18), roles.size() + 1, "Done choosing");
+            msg += "\n" + String.format(s.getText(18), roles.size() + 2, "Clear user's roles");
 
-			ui.displayMessage(msg);
+            ui.displayMessage(msg);
 
-			int input = ui.getInt("") - 1;
-			if (input < 0) {
-				continue;
-			}
-			if (input < roles.size()) {
-				f.addRole(user, (String) roles.toArray()[input]);
-				roles = f.getAvailableRoles(user);
-			}
-			else if (input == roles.size())
-			{
-				roles.clear();
-			}
-			else if (input == roles.size() + 1) {
-				user.setRoles(new HashSet<>());
-				roles = f.getAvailableRoles(user);
-			}
-			else {
-				ui.displayMessage(s.getText(20));
-			}
-		}
-		return chosenRoles;
-	}
+            int input = ui.getInt("") - 1;
+            if (input < 0) {
+                continue;
+            }
+            if (input < roles.size()) {
+                f.addRole(user, (String) roles.toArray()[input]);
+                roles = f.getAvailableRoles(user);
+            } else if (input == roles.size()) {
+                roles.clear();
+            } else if (input == roles.size() + 1) {
+                user.setRoles(new HashSet<>());
+                roles = f.getAvailableRoles(user);
+            } else {
+                ui.displayMessage(s.getText(20));
+            }
+        }
+        return chosenRoles;
+    }
 
     private Set<String> chooseRoles() throws Keyboard.DALKeyboardInterruptException {
         if (selected != null) {
@@ -395,16 +360,15 @@ public class TUIController {
         }
     }
 
-	private void finishUpdate() throws DALException {
-		if (selected != null) {
-			f.updateUser(selected, selectedOriginalID);
-		}
-		updating = false;
-	}
+    private void finishUpdate() throws DALException {
+        if (selected != null) {
+            f.updateUser(selected, selectedOriginalID);
+        }
+        updating = false;
+    }
 
-	public void run()
-	{
-		this.menu();
-	}
+    public void run() {
+        this.menu();
+    }
 
 }
