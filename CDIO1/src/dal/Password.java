@@ -12,7 +12,7 @@ public class Password {
         password = insertAtRandom(password, randomCharacter("0123456789"));
         password = insertAtRandom(password, randomCharacter("0123456789"));
             
-
+        
         password = insertAtRandom(password, randomCharacter("ABCDEFGHIJKLMNOPQRSTUVWXYZ"));
         password = insertAtRandom(password, randomCharacter("ABCDEFGHIJKLMNOPQRSTUVWXYZ"));
         return password;

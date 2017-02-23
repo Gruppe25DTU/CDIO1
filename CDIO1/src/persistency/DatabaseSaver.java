@@ -225,15 +225,16 @@ public class DatabaseSaver implements IPersistency {
 	private static Connection getConnection() throws Exception {
 		try {
 			String driver = "com.mysql.jdbc.Driver";
-			String url = "jdbc:mysql://localhost:3306/cdio01";
+			String url = "jdbc:mysql://localhost:3306/25cdio01";
 			String username = "root";
 			String password = "";
 			Class.forName(driver);
 
 			Connection conn = DriverManager.getConnection(url, username, password);
-			System.out.println("Connected");
+			System.out.println("Connected.");
 			return conn;
 		} catch (Exception e) {
+			System.out.println("Not connected.");
 			e.printStackTrace();
 		}
 
