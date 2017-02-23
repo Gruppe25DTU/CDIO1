@@ -9,7 +9,7 @@ public class TUIBasic_Strings {
                     + "[4] : Delete user \n"
                     + "[5] : Close program \n",
 
-            "Welcome to the User Management System™ \n You have the following options:",
+            "Welcome to the User Management System \n You have the following options:",
 
             "Listing users...",
 

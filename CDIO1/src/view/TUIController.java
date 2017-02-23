@@ -156,7 +156,6 @@ public class TUIController {
                     ui.displayMessage(".." + user);
                 }
         } catch (DALException e) {
-            e.printStackTrace();
             ui.displayMessage("Unable to retrieve user list!");
         }
     }
@@ -237,9 +236,7 @@ public class TUIController {
                         break;
 
                 } catch (DALException e) {
-                    e.printStackTrace();
                 } catch (Keyboard.DALKeyboardInterruptException e) {
-                    e.printStackTrace();
                     return;
                 }
             } else {

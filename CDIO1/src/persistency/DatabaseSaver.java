@@ -296,8 +296,7 @@ public class DatabaseSaver implements IPersistency {
 				results = stmt.getMoreResults();
 			} while (results);
 			stmt.close();
-		} catch (Exception e) {
-			e.printStackTrace();
+		} catch (SQLException e) {
 		}
 		return list;
 	}
