@@ -36,7 +36,7 @@ public class DatabaseSaver implements IPersistency {
 	/**
 	 * Adds a user to the database:
 	 */
-	private static boolean addToTable(UserDTO user) {
+	private static boolean addToTable(UserDTO user)  {
 		boolean returnb = false;
 		int userID = user.getUserID();
 		String userName = user.getUserName();
