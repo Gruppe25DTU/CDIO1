@@ -135,13 +135,12 @@ public class UserDAOBasic implements IUserDAO {
         Set<Integer> availableIDs = new HashSet<>(allowedIDs);
         availableIDs.removeAll(usedIDs);
         if (availableIDs.size() == 0) {
-            //TODO: New exception
             throw new DALException("All IDs are in use!");
         }
         return availableIDs;
     }
 
-    @Override
+    @Override			
     public boolean addRole(UserDTO user, String role) {
         Set<String> tmp = new HashSet<>(user.getRoles());
         tmp.add(role);

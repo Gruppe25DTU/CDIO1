@@ -26,3 +26,5 @@ public interface IPersistency {
     void quit();
 
 }
+
+

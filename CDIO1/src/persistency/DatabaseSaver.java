@@ -137,7 +137,7 @@ public class DatabaseSaver implements IPersistency {
 
 
 		} catch (SQLException e) {
-			throw new DALException("Error occured while adding roles to role table");
+			throw new DALException("");
 		}
 	}
 

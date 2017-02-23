@@ -1,4 +1,4 @@
-package test;
+package main;
 
 import dal.IUserDAO;
 import dal.UserDAOBasic;
@@ -9,7 +9,7 @@ import view.IUserInterface;
 import view.TUIBasic;
 import view.TUIController;
 
-public class TestController {
+public class Main {
 
 
     public static void main(String[] args) {
