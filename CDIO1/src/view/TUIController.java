@@ -8,12 +8,12 @@ import inputDevices.Keyboard;
 
 import java.util.*;
 
-public class TUIController {
+public class TUIController implements IUIController {
 
     private boolean updating = false;
     private int selectedOriginalID;
     private UserDTO selected;
-    private IUserInterface ui;
+    private TUIDisplay ui;
     private IUserDAO f;
     private TUIBasic_Strings s;
     private HashMap<String, Command> commandMap;
@@ -47,7 +47,7 @@ public class TUIController {
 
     }
 
-    public TUIController(IUserInterface ui, IUserDAO f) {
+    public TUIController(TUIDisplay ui, IUserDAO f) {
         this.f = f;
         this.ui = ui;
         s = new TUIBasic_Strings();
@@ -247,7 +247,7 @@ public class TUIController {
         }
     }
 
-    private void quit() {
+    public void quit() {
         running = false;
         f.quit();
         ui.quit();

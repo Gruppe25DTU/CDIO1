@@ -15,13 +15,13 @@ import dto.UserDTO;
 import persistency.IPersistency;
 import persistency.MemorySaver;
 import view.IUserInterface;
-import view.TUIBasic;
+import view.TUIDisplay;
 import view.TUIController;
 
 public class Usertest {
 	IPersistency persistency = new MemorySaver();
     IUserDAO logic = new UserDAOBasic(persistency);
-    IUserInterface ui = new TUIBasic();
+    IUserInterface ui = new TUIDisplay();
     TUIController ctrl = new TUIController(ui, logic);
 
     @Before
