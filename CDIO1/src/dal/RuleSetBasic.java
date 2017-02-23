@@ -40,11 +40,11 @@ public class RuleSetBasic implements IRuleSet {
                         "* Numbers\n" +
                         "* Special characters (Use only\". - _ + ! ? =\")"
                         , t -> {
-                    int hasLowerCase = t.matches(".*[a-zæøå]+.*") ? 1 : 0;
-                    int hasUpper = t.matches(".*[A-ZÆØÅ]+.*") ? 1 : 0;
+                    int hasLowerCase = t.matches(".*[a-z]+.*") ? 1 : 0;
+                    int hasUpper = t.matches(".*[A-Z]+.*") ? 1 : 0;
                     int hasNumber = t.matches(".*[0-9]+.*") ? 1 : 0;
                     int hasSpecial = t.matches(".*[.-_+!?=]+.*") ? 1 : 0;
-                    boolean hasIllegal = !t.matches("[a-zæøåA-ZÆØÅ0-9.-_+!?=]*");
+                    boolean hasIllegal = !t.matches("[a-zA-Z0-9.-_+!?=]*");
 
                     return (!hasIllegal &&
                     	   ((hasLowerCase + hasUpper + hasNumber + hasSpecial) >= minPwdReq) 
