@@ -27,7 +27,7 @@ public class Keyboard {
         try {
             result = Integer.parseInt(input);
         } catch (NumberFormatException e) {
-            e.printStackTrace();
+            
         }
         return result;
     }

@@ -7,7 +7,7 @@ public interface IRuleSet {
 	static final int minID = 11, maxID = 99;
     static final int minName = 2, maxName = 20;
     static final int minIni = 2, maxIni = 4;
-    static final int minPwd = 6, minPwdReq = 3;
+    static final int minPwd = 6, minPwdReq = 3, maxPwd = 30;
 
     Rule<Integer> getIdReq();
 
