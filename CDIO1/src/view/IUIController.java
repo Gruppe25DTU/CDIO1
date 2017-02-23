@@ -37,6 +37,8 @@ public interface IUIController {
      */
     void quit();
     
+    void initCommandList();
+    
     void run();
 
 }
