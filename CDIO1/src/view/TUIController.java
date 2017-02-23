@@ -101,8 +101,10 @@ public class TUIController {
         for (String key : commandMap.keySet()) {
             menu.add("[" + key + "]" + " : " + commandMap.get(key));
         }
-
-        ui.displayMessage("\n" + s.getText(1));
+        String quit = Keyboard.KEYBOARD_INTERRUPT_CODE;
+        ui.displayMessage("\n" + s.getText(1)
+                + (quit.length() > 0 ? "Type '" + quit + "' to go back a level, or exit the program from the main menu"
+                : ""));
         while (running) {
             //TODO: Stringbank
             ui.showMenu(menu);
