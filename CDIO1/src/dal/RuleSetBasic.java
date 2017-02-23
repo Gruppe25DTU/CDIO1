@@ -17,10 +17,6 @@ public class RuleSetBasic implements IRuleSet {
     }
 
     private void createRuleSet() {
-        int minID = 11, maxID = 99;
-        int minName = 2, maxName = 20;
-        int minIni = 2, maxIni = 3;
-        int minPwd = 6, minPwdReq = 3;
         String[][] exclusiveRoles = new String[][]{{
                 "Pharmacist", "Foreman",
         }};
@@ -44,14 +40,13 @@ public class RuleSetBasic implements IRuleSet {
                         "* Numbers\n" +
                         "* Special characters (Use only\". - _ + ! ? =\")"
                         , t -> {
-                    int hasSize = t.length() >= minPwd ? 1 : 0;
                     int hasLowerCase = t.matches(".*[a-zæøå]+.*") ? 1 : 0;
                     int hasUpper = t.matches(".*[A-ZÆØÅ]+.*") ? 1 : 0;
                     int hasNumber = t.matches(".*[0-9]+.*") ? 1 : 0;
                     int hasSpecial = t.matches(".*[.-_+!?=]+.*") ? 1 : 0;
                     boolean hasIllegal = !t.matches("[a-zæøåA-ZÆØÅ0-9.-_+!?=]*");
 
-                    return (!hasIllegal && ((hasSize + hasLowerCase + hasUpper + hasNumber + hasSpecial) >= minPwdReq));
+                    return (!hasIllegal && ((hasLowerCase + hasUpper + hasNumber + hasSpecial) >= minPwdReq) && t.length()>=minPwd);
                 }
                 );
         String roleRuleString = "Following roles cannot be assigned at the same time:";

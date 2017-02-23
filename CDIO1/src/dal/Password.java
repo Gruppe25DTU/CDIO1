@@ -8,11 +8,13 @@ public class Password {
         for (int i = 0; i < length - 2; i++) {
             password = password + randomCharacter("abcdefghijklmnopqrstuvwxyz");
         }
-        String randomDigit = randomCharacter("0123456789");
-        password = insertAtRandom(password, randomDigit);
+        
+        password = insertAtRandom(password, randomCharacter("0123456789"));
+        password = insertAtRandom(password, randomCharacter("0123456789"));
+            
 
-        String randomcapsCharacter = randomCharacter("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-        password = insertAtRandom(password, randomcapsCharacter);
+        password = insertAtRandom(password, randomCharacter("ABCDEFGHIJKLMNOPQRSTUVWXYZ"));
+        password = insertAtRandom(password, randomCharacter("ABCDEFGHIJKLMNOPQRSTUVWXYZ"));
         return password;
     }
 

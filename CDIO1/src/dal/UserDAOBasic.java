@@ -17,7 +17,7 @@ public class UserDAOBasic implements IUserDAO {
         ruleSet = new RuleSetBasic();
         this.persistencyManager = persistencyManager;
         //TODO: Fix hardcoded values!
-        for (int i = 0; i < 99; i++) {
+        for (int i = IRuleSet.minID; i < IRuleSet.maxID; i++) {
             allowedIDs.add(i);
         }
     }
