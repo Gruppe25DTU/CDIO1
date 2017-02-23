@@ -9,7 +9,8 @@ import java.util.regex.Pattern;
 public class RuleSetBasic implements IRuleSet {
 
     private static final String ID_STRING = "id", NAME_STRING = "name", INITIALS_STRING = "initials", ROLES_STRING = "roles", CPR_STRING = "cpr", PWD_STRING = "pwd";
-    Map<String, Rule> ruleList = new HashMap<>();
+    @SuppressWarnings("rawtypes")
+	Map<String, Rule> ruleList = new HashMap<>();
 
     public RuleSetBasic() {
         createRuleSet();

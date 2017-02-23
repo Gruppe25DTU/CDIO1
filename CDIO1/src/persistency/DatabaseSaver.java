@@ -44,8 +44,8 @@ public class DatabaseSaver implements IPersistency {
 		String cpr = user.getCpr();
 		String password = user.getPassword();
 
-		
-		
+
+
 
 		String consistantStatement = "INSERT INTO users VALUES('%d','%s','%s','%s','%s');";
 		String statement = String.format(consistantStatement, userID, userName, ini, cpr, password);
@@ -132,7 +132,7 @@ public class DatabaseSaver implements IPersistency {
 			foremanInformation.executeUpdate();
 			PreparedStatement operatorInformation = conn.prepareStatement(operator);
 			operatorInformation.executeUpdate();
-			
+
 
 		} catch (SQLException e) {
 
@@ -178,7 +178,7 @@ public class DatabaseSaver implements IPersistency {
 
 	}
 
-	
+
 	private static ArrayList<String> getRoles(int userID) {
 		ArrayList<String> returnList = new ArrayList<String>();
 
@@ -284,7 +284,11 @@ public class DatabaseSaver implements IPersistency {
 						information.add(result.getString("password"));
 
 						roles = getRoles(Integer.parseInt(information.get(0)));
-						list.add(arrayToUserDTO(information, roles));
+						try {
+							list.add(arrayToUserDTO(information, roles));
+						}
+						catch (ArrayIndexOutOfBoundsException e) {}
+
 					}
 
 					result.close();
@@ -297,7 +301,7 @@ public class DatabaseSaver implements IPersistency {
 		}
 		return list;
 	}
-		
+
 
 	@Override
 	public Set<Integer> getUserIDList() {
@@ -346,31 +350,27 @@ public class DatabaseSaver implements IPersistency {
 	 */
 	@Override
 	public void updateUser(UserDTO user, int userID) {
-		String consistantStatement = "update users set userID = %d, userName = '%s', ini = '%s', cpr = '%s', password = '%s', role = '%s' where userID = %d;";
+		String consistantStatement = "update users set userID = %d, userName = '%s', ini = '%s', cpr = '%s', password = '%s' where userID = %d;";
 		int newUserID = user.getUserID();
 		String userName = user.getUserName();
 		String ini = user.getIni();
 		String cpr = user.getCpr();
 		String password = user.getPassword();
-		String roles = "";
+		
 
-		//TODO: Method in UserDTO?
-		for (String role : user.getRoles()) {
-			roles += ";" + role;
-		}
-		if (roles.equals("")) {
-			roles = roles.substring(1);
-		}
-
-
-		String statement = String.format(consistantStatement, newUserID, userName, ini, cpr, password, roles, userID);
+		String statement = String.format(consistantStatement, newUserID, userName, ini, cpr, password, userID);
 
 		try {
 			PreparedStatement update = conn.prepareStatement(statement);
+			deleteRoles(userID);
+			for (String role : user.getRoles()) {
+				addRole(newUserID,role);
+			}
+			
 			update.executeUpdate();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println("Bitch why u no work?!");
 		}
 
 	}
@@ -383,15 +383,32 @@ public class DatabaseSaver implements IPersistency {
 	 * @return UserDTO
 	 */
 	private static UserDTO arrayToUserDTO(List<String> information, List<String> roles) {
+		if(information.size()==0) {
+			return null;
+
+		};
 		int userID = Integer.parseInt(information.get(0));
 		String userName = information.get(1);
 		String ini = information.get(2);
 		String cpr = information.get(3);
 		String password = information.get(4);
 
-
 		return new UserDTO(userID, userName, ini, cpr, password, roles);
+
 	}
+
+	private void deleteRoles(int userID) {
+		String statement = "delete from worksAs where u_ID = '%d'";
+		statement = String.format(statement, userID);
+		try {
+			PreparedStatement delete = conn.prepareStatement(statement);
+			delete.executeUpdate();
+		} catch (SQLException e) {
+			//Nothing happens here
+		}
+
+	}
+
 
 	/**
 	 * loads a user from the database.
@@ -421,7 +438,12 @@ public class DatabaseSaver implements IPersistency {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return arrayToUserDTO(array, roles);
+		UserDTO user = null;
+		try {
+			user = arrayToUserDTO(array,roles);
+		}
+		catch (ArrayIndexOutOfBoundsException e ) {}
+		return user;
 	}
 
 	/**
