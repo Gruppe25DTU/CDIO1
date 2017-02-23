@@ -16,10 +16,6 @@ public class RuleSetBasic implements IRuleSet {
     }
 
     private void createRuleSet() {
-        int minID = 11, maxID = 99;
-        int minName = 2, maxName = 20;
-        int minIni = 2, maxIni = 4;
-        int minPwd = 6, minPwdReq = 3;
         String[][] exclusiveRoles = new String[][]{{
                 "Pharmacist", "Foreman",
         }};
