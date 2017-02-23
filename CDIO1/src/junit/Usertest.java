@@ -9,6 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import dal.IUserDAO;
+import dal.IUserDAO.DALException;
 import dal.UserDAOBasic;
 import dto.UserDTO;
 import persistency.IPersistency;
@@ -31,25 +32,46 @@ public class Usertest {
     
 	@Test
 	public void CreateUsertest(){
-		ArrayList<UserDTO> test = persistency.getUserList();
-		assertTrue(test.size() != 0);
+		ArrayList<UserDTO> test;
+		try {
+			test = persistency.getUserList();
+			assertTrue(test.size() != 0);
+		} catch (DALException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 	
 	@Test
 	public void UpdateUserTest(){
-		UserDTO before = persistency.getUser(11);
-		ctrl.listUsers();
-		ctrl.initCommandList();
-		ctrl.updateUser();
-		assertNotEquals(before, persistency.getUser(11));
+		UserDTO before;
+		try {
+			before = persistency.getUser(11);
+			ctrl.listUsers();
+			ctrl.initCommandList();
+			ctrl.updateUser();
+			assertNotEquals(before, persistency.getUser(11));
+		} catch (DALException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		
 	}
 	
 	@Test
 	public void DeleteUser() {
-		ArrayList<UserDTO> test = persistency.getUserList();
-		ctrl.deleteUser();
-		assertNotEquals(test, persistency.getUserList());
+		ArrayList<UserDTO> test;
+		try {
+			test = persistency.getUserList();
+			ctrl.deleteUser();
+			assertNotEquals(test, persistency.getUserList());
+		} catch (DALException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 
 }

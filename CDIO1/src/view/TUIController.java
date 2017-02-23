@@ -61,7 +61,7 @@ public class TUIController {
             try {
                 method();
             } catch (DALException | Keyboard.DALKeyboardInterruptException e) {
-                e.printStackTrace();
+                
             }
         }
     }
@@ -112,7 +112,7 @@ public class TUIController {
             try {
                 input = ui.getResponse("");
             } catch (Keyboard.DALKeyboardInterruptException e) {
-                e.printStackTrace();
+                ui.displayMessage("System shutting down...");
                 //TODO: Fix quit order / system!
                 quit();
             }
@@ -136,13 +136,12 @@ public class TUIController {
                 if (ui.confirmInput())
                     f.saveUser(newUser);
             } catch (DALException | Keyboard.DALKeyboardInterruptException e) {
-                e.printStackTrace();
+            	ui.displayMessage(e.getMessage());
                 return;
             }
         } catch (DALException e) {
-            e.printStackTrace();
+            ui.displayMessage(e.getMessage());
         } catch (Keyboard.DALKeyboardInterruptException e) {
-            e.printStackTrace();
             return;
         }
     }
@@ -168,7 +167,6 @@ public class TUIController {
             try {
                 userId = ui.getInt("");
             } catch (Keyboard.DALKeyboardInterruptException e) {
-                e.printStackTrace();
                 return;
             }
             if (userId != -1) {
@@ -181,8 +179,11 @@ public class TUIController {
                         ui.displayMessage(s.getText(21));
                 } catch (DALException e) {
                     ui.displayMessage(e.getMessage());
+                    return;
                 }
             }
+            else
+            	return;
         }
     }
 
@@ -202,7 +203,6 @@ public class TUIController {
             try {
                 input = ui.getResponse("");
             } catch (Keyboard.DALKeyboardInterruptException e) {
-                e.printStackTrace();
                 return;
             }
             Command cmd;
@@ -219,7 +219,7 @@ public class TUIController {
             try {
                 userId = ui.getInt("");
             } catch (Keyboard.DALKeyboardInterruptException e) {
-                e.printStackTrace();
+                ui.displayMessage("System shutting down...");
                 return;
             }
             if (userId != -1) {
@@ -236,6 +236,8 @@ public class TUIController {
                         break;
 
                 } catch (DALException e) {
+                	ui.displayMessage(e.getMessage());
+                	return;
                 } catch (Keyboard.DALKeyboardInterruptException e) {
                     return;
                 }

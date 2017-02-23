@@ -5,31 +5,33 @@ import dto.UserDTO;
 import java.sql.*;
 import java.util.*;
 
+import dal.IUserDAO.DALException;
+
 public class DatabaseSaver implements IPersistency {
 	private static Connection conn;
 
 
 	public DatabaseSaver() {
-		init();
 		try {
+			init();
 			createTable();
 			addInitialInformation();
 			createView();
-		} catch (Exception e) {
+		} catch (DALException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println(e.getMessage());
 		}
 	}
 
 	/**
 	 * Initialize the connection
 	 */
-	public void init() {
+	public void init() throws DALException {
 		try {
 			conn = getConnection();
-		} catch (Exception e) {
+		} catch (DALException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw e;
 		}
 	}
 
@@ -80,7 +82,7 @@ public class DatabaseSaver implements IPersistency {
 	 *
 	 * @throws Exception
 	 */
-	private static void createTable() throws Exception {
+	private static void createTable() throws DALException{
 		try {
 			String users = 
 					"CREATE TABLE IF NOT EXISTS users ("
@@ -113,12 +115,12 @@ public class DatabaseSaver implements IPersistency {
 			createWorksAs.executeUpdate();
 
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw new DALException("Error occured while creating database tables");
 		} finally {
 		}
 	}
 
-	private static void addInitialInformation() {
+	private static void addInitialInformation() throws DALException {
 		try {
 			String admin = "insert into roles values('a1','Admin');";
 			String pharmacist = " insert into roles values('a2','Pharmacist');";
@@ -135,7 +137,7 @@ public class DatabaseSaver implements IPersistency {
 
 
 		} catch (SQLException e) {
-
+			throw new DALException("Error occured while adding roles to role table");
 		}
 	}
 
@@ -222,7 +224,7 @@ public class DatabaseSaver implements IPersistency {
 	 * @return Conncection con
 	 * @throws Exception
 	 */
-	private static Connection getConnection() throws Exception {
+	private static Connection getConnection() throws DALException {
 		try {
 			String driver = "com.mysql.jdbc.Driver";
 			String url = "jdbc:mysql://localhost:3306/cdio01";
@@ -234,11 +236,9 @@ public class DatabaseSaver implements IPersistency {
 			System.out.println("Connected");
 			return conn;
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw new DALException("Error occured while trying to connect to database");
 		}
 
-
-		return null;
 	}
 
 	@Override
@@ -257,7 +257,7 @@ public class DatabaseSaver implements IPersistency {
 	}
 
 	@Override
-	public ArrayList<UserDTO> getUserList() {
+	public ArrayList<UserDTO> getUserList() throws DALException {
 		ArrayList<UserDTO> list = new ArrayList<>();
 
 
@@ -296,14 +296,23 @@ public class DatabaseSaver implements IPersistency {
 				results = stmt.getMoreResults();
 			} while (results);
 			stmt.close();
-		} catch (SQLException e) {
+			
 		}
+		catch(NullPointerException e)
+		{
+			throw new DALException("No connection");
+		} 
+		catch (SQLException e)
+		{
+			throw new DALException("Error with database");
+		}
+		
 		return list;
 	}
 
 
 	@Override
-	public Set<Integer> getUserIDList() {
+	public Set<Integer> getUserIDList() throws DALException{
 		String statement = "select userID from users;";
 		Set<Integer> list = new HashSet<>();
 
@@ -324,8 +333,10 @@ public class DatabaseSaver implements IPersistency {
 				results = stmt.getMoreResults();
 			} while (results);
 			stmt.close();
-		} catch (Exception e) {
-			e.printStackTrace();
+		} catch (NullPointerException e) {
+			throw new DALException("Error occured when getting User ID's");
+		} catch (SQLException e) {
+			throw new DALException("Error occured when getting User ID's");
 		}
 
 		return list;
@@ -414,7 +425,7 @@ public class DatabaseSaver implements IPersistency {
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public UserDTO getUser(int userID) {
+	public UserDTO getUser(int userID) throws DALException {
 		String statement = "Select * FROM users WHERE UserID = '%d'";
 		statement = String.format(statement, userID);
 		List<String> array = new ArrayList<>();
@@ -435,7 +446,7 @@ public class DatabaseSaver implements IPersistency {
 				roles = getRoles(Integer.parseInt(array.get(0)));
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw new DALException("Can't retrieve user");
 		}
 		UserDTO user = null;
 		try {

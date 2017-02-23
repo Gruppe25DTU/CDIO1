@@ -33,7 +33,7 @@ public class RuleSetBasic implements IRuleSet {
                 ("CPR must be entered as 'xxxxxx-yyyy' or 'xxxxxxyyyy'"
                         , t -> Pattern.matches("[0-9]{6}-?[0-9]{4}", t));
         Rule<String> pwdRule = new Rule<>
-                ("Password must be at least " + minPwd + " long and contain at least "
+                ("Password must between " + minPwd + "-"+maxPwd+" characters long and contain at least "
                         + minPwdReq + " of these categories:\n" +
                         "* Lowercase letters\n" +
                         "* Uppercase letters\n" +
@@ -46,7 +46,9 @@ public class RuleSetBasic implements IRuleSet {
                     int hasSpecial = t.matches(".*[.-_+!?=]+.*") ? 1 : 0;
                     boolean hasIllegal = !t.matches("[a-zæøåA-ZÆØÅ0-9.-_+!?=]*");
 
-                    return (!hasIllegal && ((hasLowerCase + hasUpper + hasNumber + hasSpecial) >= minPwdReq) && t.length()>=minPwd);
+                    return (!hasIllegal &&
+                    	   ((hasLowerCase + hasUpper + hasNumber + hasSpecial) >= minPwdReq) 
+                    	   && t.length()>=minPwd && t.length()<=maxPwd);
                 }
                 );
         String roleRuleString = "Following roles cannot be assigned at the same time:";
