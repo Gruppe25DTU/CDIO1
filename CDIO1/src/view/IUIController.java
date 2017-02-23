@@ -1,28 +1,14 @@
 package view;
 
-import inputDevices.Keyboard;
 
-import java.util.List;
 
-public interface IUserInterface {
-
-    void displayMessage(String msg, Object... args);
-
-    String getResponse(String msg, Object... args) throws Keyboard.DALKeyboardInterruptException;
-
-    int getInt(String msg, Object... args) throws Keyboard.DALKeyboardInterruptException;
-
-    String getLastInput();
-
-    boolean confirmInput() throws Keyboard.DALKeyboardInterruptException;
+public interface IUIController {
 
     /**
      * Shows a list of all the  available options
      * And asks for input
      */
     void menu();
-
-    void showMenu(List<String> menuCommands);
 
     /**
      * Lists all the users on the disk / database
@@ -43,10 +29,16 @@ public interface IUserInterface {
      * Asks which user to delete by entering their ID, then deletes them
      */
     void deleteUser();
+    
+    
 
     /**
      * Quits the program
      */
     void quit();
+    
+    void initCommandList();
+    
+    void run();
 
 }
