@@ -15,14 +15,12 @@ import dto.UserDTO;
 import persistency.IPersistency;
 import persistency.MemorySaver;
 import view.IUIController;
-import view.TUIDisplay;
 import view.TUIController;
 
 public class Usertest {
 	IPersistency persistency = new MemorySaver();
     IUserDAO logic = new UserDAOBasic(persistency);
-     TUIDisplay ui = new TUIDisplay();
-     IUIController ctrl = new TUIController(ui, logic);
+     IUIController ctrl = new TUIController(logic);
 
     @Before
     public void setup() throws Exception {

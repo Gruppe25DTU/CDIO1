@@ -47,9 +47,9 @@ public class TUIController implements IUIController {
 
     }
 
-    public TUIController(TUIDisplay ui, IUserDAO f) {
+    public TUIController(IUserDAO f) {
         this.f = f;
-        this.ui = ui;
+        this.ui = new TUIDisplay();
         s = new TUIBasic_Strings();
         running = true;
     }
