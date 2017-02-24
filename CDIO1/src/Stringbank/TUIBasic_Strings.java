@@ -16,7 +16,7 @@ public class TUIBasic_Strings {
             "User has been created",
 
             "Enter the User ID for the user you wish to update."
-                    + " \n or type \"help\" to see a list of all users.",
+                    + " \n or type or an invalid userID or text to go back to the main menu.",
 
             "\n Updating the user: \n %s",
 
