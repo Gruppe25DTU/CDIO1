@@ -26,7 +26,7 @@ public class TUIBasic_Strings {
                     + "[4] - done \n",
 
             "Enter the ID of the person you want to delete \n"
-                    + " or type \"help\" to see a list of all users",
+                    + " or type \"quit()\" to go back to the menu.",
 
             "Deleting... %d",
 

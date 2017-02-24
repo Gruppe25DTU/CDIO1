@@ -219,7 +219,7 @@ public class TUIController implements IUIController {
             try {
                 userId = ui.getInt("");
             } catch (Keyboard.DALKeyboardInterruptException e) {
-                ui.displayMessage("System shutting down...");
+                ui.displayMessage("Going back to the menu...");
                 return;
             }
             if (userId != -1) {
